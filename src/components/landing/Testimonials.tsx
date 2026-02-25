@@ -4,20 +4,20 @@ import { motion } from "framer-motion";
 const testimonials = [
   {
     name: "Maria Silva",
-    role: "Conquistou seu imóvel",
-    text: "A Mogibens tornou o processo tão simples! Em menos de 2 anos fui contemplada e realizei o sonho da casa própria. Atendimento impecável.",
+    role: "Conquistou seu SUV zero",
+    text: "A Mogibens tornou tudo tão simples! Em menos de 2 anos fui contemplada e saí da concessionária com meu carro novo. Atendimento impecável.",
     rating: 5,
   },
   {
     name: "Carlos Oliveira",
-    role: "Comprou seu carro novo",
-    text: "Sempre tive medo de consórcio, mas a equipe da Mogibens me explicou tudo com muita paciência. Hoje dirijo meu carro zero!",
+    role: "Comprou sua primeira moto",
+    text: "Sempre tive medo de consórcio, mas a equipe me explicou tudo com muita paciência. Hoje piloto minha moto zero quilômetro!",
     rating: 5,
   },
   {
     name: "Ana Beatriz",
-    role: "Reformou sua casa",
-    text: "Usei o consórcio de serviços para reformar toda minha casa. Parcelas que couberam no bolso e sem aquele estresse de financiamento.",
+    role: "Trocou de carro sem juros",
+    text: "Queria trocar de carro mas o financiamento não compensava. Com o consórcio da Mogibens, paguei parcelas que cabiam no bolso e sem juros.",
     rating: 5,
   },
 ];
@@ -29,7 +29,7 @@ const Testimonials = () => {
         <div className="text-center mb-16">
           <p className="text-secondary text-sm tracking-[0.2em] uppercase font-body mb-3">Depoimentos</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-            Quem já realizou o sonho
+            Quem já saiu dirigindo
           </h2>
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">

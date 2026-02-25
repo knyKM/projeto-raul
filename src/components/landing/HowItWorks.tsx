@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "01",
-    title: "Escolha seu plano",
-    description: "Selecione o tipo de consórcio ideal: imóveis, veículos ou serviços. Nossa equipe ajuda você.",
+    title: "Escolha seu veículo",
+    description: "Defina o valor da carta de crédito ideal para o carro, moto ou caminhão dos seus sonhos.",
   },
   {
     number: "02",
@@ -18,8 +18,8 @@ const steps = [
   },
   {
     number: "04",
-    title: "Realize seu sonho",
-    description: "Use sua carta de crédito como pagamento à vista e negocie os melhores preços.",
+    title: "Dirija seu novo veículo",
+    description: "Use a carta como pagamento à vista na concessionária e negocie o melhor preço.",
   },
 ];
 
@@ -37,10 +37,10 @@ const HowItWorks = () => {
         >
           <p className="text-gold text-sm tracking-[0.2em] uppercase font-body mb-3">Passo a Passo</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-            Como funciona o consórcio?
+            Como funciona o consórcio de veículos?
           </h2>
           <p className="font-body text-gold-light/50 max-w-lg mx-auto">
-            Um processo simples e transparente, do início ao fim.
+            Um processo simples e transparente, do início até a chave na mão.
           </p>
         </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
