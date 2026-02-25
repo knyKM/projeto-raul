@@ -1,48 +1,67 @@
+import { motion } from "framer-motion";
+
 const steps = [
   {
     number: "01",
     title: "Escolha seu plano",
-    description: "Selecione o tipo de consórcio ideal: imóveis, veículos ou serviços.",
+    description: "Selecione o tipo de consórcio ideal: imóveis, veículos ou serviços. Nossa equipe ajuda você.",
   },
   {
     number: "02",
     title: "Parcelas acessíveis",
-    description: "Pague parcelas mensais sem juros, apenas com taxa de administração.",
+    description: "Pague parcelas mensais sem juros, apenas com taxa de administração. Sem surpresas.",
   },
   {
     number: "03",
     title: "Contemplação",
-    description: "Seja contemplado por sorteio ou lance e receba sua carta de crédito.",
+    description: "Seja contemplado por sorteio ou lance e receba sua carta de crédito para usar.",
   },
   {
     number: "04",
     title: "Realize seu sonho",
-    description: "Use sua carta de crédito como pagamento à vista para o que desejar.",
+    description: "Use sua carta de crédito como pagamento à vista e negocie os melhores preços.",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section id="como-funciona" className="py-24 bg-hero">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+    <section id="como-funciona" className="py-24 bg-hero relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-dark/30 via-transparent to-navy-dark/30" />
+      <div className="relative container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
+        >
           <p className="text-gold text-sm tracking-[0.2em] uppercase font-body mb-3">Passo a Passo</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
             Como funciona o consórcio?
           </h2>
-        </div>
+          <p className="font-body text-gold-light/50 max-w-lg mx-auto">
+            Um processo simples e transparente, do início ao fim.
+          </p>
+        </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <div key={step.number} className="relative">
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ duration: 0.5, delay: index * 0.12 }}
+              className="relative"
+            >
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-8 left-full w-full h-px bg-gradient-to-r from-gold/30 to-transparent z-0" />
               )}
-              <div className="relative z-10">
-                <span className="font-display text-5xl font-bold text-gold/20">{step.number}</span>
+              <div className="relative z-10 bg-navy-light/30 rounded-xl p-6 border border-gold/5 hover:border-gold/15 transition-colors duration-300">
+                <span className="font-display text-4xl font-bold text-gold/20">{step.number}</span>
                 <h3 className="font-display text-lg font-semibold text-primary-foreground mt-2 mb-3">{step.title}</h3>
-                <p className="font-body text-gold-light/60 text-sm leading-relaxed">{step.description}</p>
+                <p className="font-body text-gold-light/55 text-sm leading-relaxed">{step.description}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
