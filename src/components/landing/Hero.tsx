@@ -33,7 +33,7 @@ const Hero = () => {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-primary-foreground mb-6 leading-tight"
         >
-          Realize seus sonhos<br />
+          Seu carro novo<br />
           <span className="text-gradient-gold">com tranquilidade</span>
         </motion.h1>
 
@@ -43,8 +43,8 @@ const Hero = () => {
           transition={{ duration: 0.7, delay: 0.4 }}
           className="font-body text-gold-light/70 text-lg md:text-xl max-w-2xl mx-auto mb-5"
         >
-          Consórcios para imóveis, veículos e serviços com as melhores condições do mercado. 
-          Sem juros, sem entrada obrigatória.
+          Consórcio de veículos com as melhores condições do mercado. 
+          Sem juros, sem entrada obrigatória. Carros, motos e caminhões.
         </motion.p>
 
         <motion.div

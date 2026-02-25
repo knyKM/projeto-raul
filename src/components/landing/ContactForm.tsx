@@ -49,7 +49,7 @@ const ContactForm = () => {
             Solicite seu orçamento
           </h2>
           <p className="font-body text-muted-foreground max-w-md mx-auto">
-            Preencha o formulário e nossa equipe entrará em contato com a melhor proposta. <strong className="text-foreground">É rápido e sem compromisso.</strong>
+            Preencha o formulário e nossa equipe entrará em contato com a melhor proposta para seu veículo. <strong className="text-foreground">É rápido e sem compromisso.</strong>
           </p>
         </motion.div>
 
@@ -113,15 +113,15 @@ const ContactForm = () => {
           </div>
 
           <div>
-            <label className="text-sm font-body font-medium text-foreground mb-1.5 block">Tipo de Consórcio *</label>
+            <label className="text-sm font-body font-medium text-foreground mb-1.5 block">Tipo de Veículo *</label>
             <Select value={formData.tipo} onValueChange={(v) => setFormData({ ...formData, tipo: v })}>
               <SelectTrigger className="font-body">
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Selecione o tipo de veículo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="imovel">🏠 Imóvel</SelectItem>
-                <SelectItem value="veiculo">🚗 Veículo</SelectItem>
-                <SelectItem value="servico">🔧 Serviço</SelectItem>
+                <SelectItem value="carro">🚗 Carro</SelectItem>
+                <SelectItem value="moto">🏍️ Moto</SelectItem>
+                <SelectItem value="caminhao">🚛 Caminhão</SelectItem>
                 <SelectItem value="outro">📋 Outro</SelectItem>
               </SelectContent>
             </Select>

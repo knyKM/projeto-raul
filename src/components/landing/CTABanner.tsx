@@ -18,10 +18,10 @@ const CTABanner = () => {
           transition={{ duration: 0.5 }}
         >
           <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-            Pronto para dar o primeiro passo?
+            Pronto para conquistar seu veículo?
           </h2>
           <p className="font-body text-gold-light/60 max-w-md mx-auto mb-8">
-            Fale com um consultor especializado e descubra a melhor opção de consórcio para você.
+            Fale com um consultor especializado e descubra a melhor opção de consórcio para o seu próximo carro, moto ou caminhão.
           </p>
           <Button variant="hero" size="lg" onClick={scrollToContact} className="gap-2">
             Falar com Consultor

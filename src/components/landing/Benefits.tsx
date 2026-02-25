@@ -15,12 +15,12 @@ const benefits = [
   {
     icon: Clock,
     title: "Flexibilidade",
-    description: "Parcelas que cabem no seu bolso, com prazos que se adaptam à sua realidade financeira.",
+    description: "Parcelas que cabem no seu bolso. Escolha o prazo ideal para conquistar seu veículo.",
   },
   {
     icon: Award,
     title: "Poder de Compra",
-    description: "Use a carta de crédito como pagamento à vista e negocie os melhores descontos.",
+    description: "Use a carta de crédito como pagamento à vista na concessionária e negocie os melhores descontos.",
   },
 ];
 
@@ -37,10 +37,10 @@ const Benefits = () => {
         >
           <p className="text-secondary text-sm tracking-[0.2em] uppercase font-body mb-3">Vantagens</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Por que escolher o consórcio?
+            Por que escolher o consórcio de veículos?
           </h2>
           <p className="font-body text-muted-foreground max-w-xl mx-auto">
-            O consórcio é a forma mais inteligente e acessível de conquistar seus objetivos sem comprometer seu orçamento.
+            A forma mais inteligente de conquistar seu carro, moto ou caminhão sem comprometer seu orçamento.
           </p>
         </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
