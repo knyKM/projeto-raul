@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ChevronDown, Phone, CheckCircle2 } from "lucide-react";
-import heroBg from "@/assets/hero-bg.png";
 
 const Hero = () => {
   const scrollToContact = () => {
@@ -9,19 +8,18 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-hero overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-15 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/60 via-navy/30 to-navy-dark/90" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-navy-dark">
+      {/* Subtle geometric accents */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gold/[0.03] blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-gold/[0.02] blur-3xl translate-y-1/2 -translate-x-1/3" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy-dark via-navy to-navy-dark" />
       
       <div className="relative z-10 container mx-auto px-4 text-center pt-28 pb-20">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="inline-flex items-center gap-2 bg-gold/10 border border-gold/20 rounded-full px-5 py-2 mb-8"
+          className="inline-flex items-center gap-2 bg-gold/[0.08] border border-gold/15 rounded-full px-5 py-2 mb-8"
         >
           <CheckCircle2 className="w-4 h-4 text-gold" />
           <span className="text-gold font-body text-xs tracking-wide">Mais de 2.500 clientes satisfeitos</span>
@@ -31,9 +29,9 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-primary-foreground mb-6 leading-tight"
+          className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
         >
-          Seu carro novo<br />
+          <span className="text-primary-foreground">Seu carro novo</span><br />
           <span className="text-gradient-gold">com tranquilidade</span>
         </motion.h1>
 
@@ -41,21 +39,20 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="font-body text-gold-light/70 text-lg md:text-xl max-w-2xl mx-auto mb-5"
+          className="font-body text-gold-light/60 text-lg md:text-xl max-w-xl mx-auto mb-6 leading-relaxed"
         >
-          Consórcio de veículos com as melhores condições do mercado. 
-          Sem juros, sem entrada obrigatória. Carros, motos e caminhões.
+          Consórcio de veículos sem juros e sem entrada obrigatória. Carros, motos e caminhões.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-gold-light/50 font-body text-sm"
+          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mb-12 text-gold-light/40 font-body text-sm"
         >
-          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-gold/60" /> Sem juros</span>
-          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-gold/60" /> Sem entrada</span>
-          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-gold/60" /> 100% seguro</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-gold/50" /> Sem juros</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-gold/50" /> Sem entrada</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-gold/50" /> 100% seguro</span>
         </motion.div>
 
         <motion.div
@@ -77,7 +74,7 @@ const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="mt-6 text-xs font-body text-gold-light/30"
+          className="mt-8 text-xs font-body text-gold-light/25"
         >
           Resposta em até 24h · Sem compromisso
         </motion.p>
@@ -85,10 +82,10 @@ const Hero = () => {
 
       <motion.div
         animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
+        transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
       >
-        <ChevronDown className="w-6 h-6 text-gold/40" />
+        <ChevronDown className="w-5 h-5 text-gold/30" />
       </motion.div>
     </section>
   );

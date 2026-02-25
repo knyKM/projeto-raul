@@ -18,16 +18,16 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-md border-b border-gold/10">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-navy-dark/95 backdrop-blur-md border-b border-gold/[0.06]">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2">
-          <img src={logo} alt="Mogibens Consórcios" className="h-10 w-auto" />
+          <img src={logo} alt="Mogibens Consórcios" className="h-10 w-auto rounded-md" />
         </a>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="text-sm text-gold-light/80 hover:text-gold transition-colors font-body">
+            <a key={link.href} href={link.href} className="text-sm text-gold-light/60 hover:text-gold transition-colors font-body">
               {link.label}
             </a>
           ))}
@@ -38,7 +38,7 @@ const Header = () => {
             Solicitar Orçamento
           </Button>
           <button
-            className="md:hidden p-2 text-gold-light/80 hover:text-gold transition-colors"
+            className="md:hidden p-2 text-gold-light/60 hover:text-gold transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
@@ -49,14 +49,14 @@ const Header = () => {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="md:hidden bg-navy/98 backdrop-blur-md border-t border-gold/10 animate-fade-in">
+        <div className="md:hidden bg-navy-dark/98 backdrop-blur-md border-t border-gold/[0.06] animate-fade-in">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-sm text-gold-light/80 hover:text-gold transition-colors font-body py-2"
+                className="text-sm text-gold-light/60 hover:text-gold transition-colors font-body py-2"
               >
                 {link.label}
               </a>
