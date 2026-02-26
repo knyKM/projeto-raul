@@ -22,7 +22,7 @@ const NotFound = () => {
           A página que você procura não existe ou foi movida.
         </p>
         <Button variant="hero" size="lg" asChild>
-          <a href="/" className="gap-2">
+          <a href={import.meta.env.BASE_URL} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Início
           </a>
