@@ -53,18 +53,20 @@ const DashboardOverview = () => {
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={mockAccessByDay}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 88%)" />
-                  <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "8px",
-                      border: "1px solid hsl(220, 15%, 88%)",
+                      border: "1px solid hsl(var(--border))",
+                      backgroundColor: "hsl(var(--card))",
+                      color: "hsl(var(--foreground))",
                       fontSize: "12px",
                     }}
                   />
-                  <Bar dataKey="acessos" fill="hsl(220, 40%, 16%)" radius={[4, 4, 0, 0]} name="Acessos" />
-                  <Bar dataKey="cadastros" fill="hsl(43, 50%, 54%)" radius={[4, 4, 0, 0]} name="Cadastros" />
+                  <Bar dataKey="acessos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Acessos" />
+                  <Bar dataKey="cadastros" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} name="Cadastros" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
