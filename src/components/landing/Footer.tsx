@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { LayoutDashboard } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 
 const Footer = () => {
@@ -14,10 +16,17 @@ const Footer = () => {
             <a href="#contato" className="hover:text-gold transition-colors">Contato</a>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-gold/[0.04] text-center">
+        <div className="mt-8 pt-6 border-t border-gold/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm font-body text-gold-light/25">
             © {new Date().getFullYear()} Mogibens Consórcios. Todos os direitos reservados.
           </p>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 text-xs font-body text-gold-light/20 hover:text-gold/50 transition-colors"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Painel Administrativo
+          </Link>
         </div>
       </div>
     </footer>
