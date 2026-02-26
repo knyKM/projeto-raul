@@ -69,10 +69,10 @@ const DashboardAds = () => {
               Acompanhe o desempenho de Meta Ads, Google Ads e TikTok Ads em um só lugar.
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <DateRangeFilter value={dateRange} onChange={setDateRange} />
             <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-              <SelectTrigger className="w-48 font-body">
+              <SelectTrigger className="w-full sm:w-48 font-body">
                 <SelectValue placeholder="Filtrar plataforma" />
               </SelectTrigger>
               <SelectContent>
@@ -86,7 +86,7 @@ const DashboardAds = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
@@ -94,7 +94,7 @@ const DashboardAds = () => {
                 <span className="text-xs font-body">Total Leads</span>
                 <InfoTooltip text={tooltips.leads} />
               </div>
-              <p className="text-2xl font-display font-bold text-foreground">{totalLeads}</p>
+              <p className="text-xl sm:text-2xl font-display font-bold text-foreground">{totalLeads}</p>
               <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
                 <ArrowUpRight className="w-3 h-3" /> +12% vs semana anterior
               </p>
@@ -107,7 +107,7 @@ const DashboardAds = () => {
                 <span className="text-xs font-body">Gasto Total</span>
                 <InfoTooltip text={tooltips.gasto} />
               </div>
-              <p className="text-2xl font-display font-bold text-foreground">
+              <p className="text-xl sm:text-2xl font-display font-bold text-foreground truncate">
                 R$ {totalGasto.toLocaleString("pt-BR")}
               </p>
               <p className="text-xs text-destructive font-body flex items-center gap-0.5 mt-1">
@@ -122,7 +122,7 @@ const DashboardAds = () => {
                 <span className="text-xs font-body">Receita Gerada</span>
                 <InfoTooltip text={tooltips.receita} />
               </div>
-              <p className="text-2xl font-display font-bold text-foreground">
+              <p className="text-xl sm:text-2xl font-display font-bold text-foreground truncate">
                 R$ {totalReceita.toLocaleString("pt-BR")}
               </p>
               <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
@@ -137,7 +137,7 @@ const DashboardAds = () => {
                 <span className="text-xs font-body">CPL Médio</span>
                 <InfoTooltip text={tooltips.cpl} />
               </div>
-              <p className="text-2xl font-display font-bold text-foreground">
+              <p className="text-xl sm:text-2xl font-display font-bold text-foreground">
                 R$ {cplGeral.toFixed(2)}
               </p>
               <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
@@ -152,7 +152,7 @@ const DashboardAds = () => {
                 <span className="text-xs font-body">ROAS Geral</span>
                 <InfoTooltip text={tooltips.roas} />
               </div>
-              <p className="text-2xl font-display font-bold text-foreground">
+              <p className="text-xl sm:text-2xl font-display font-bold text-foreground">
                 {roasGeral.toFixed(2)}x
               </p>
               <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
@@ -226,9 +226,9 @@ const DashboardAds = () => {
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={mockLeadsPorDia}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="data" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
+                   <XAxis dataKey="data" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))", fontSize: "12px" }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="meta" name="Meta Ads" fill="#1877F2" radius={[3, 3, 0, 0]} />
                   <Bar dataKey="google" name="Google Ads" fill="#EA4335" radius={[3, 3, 0, 0]} />
@@ -275,9 +275,9 @@ const DashboardAds = () => {
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={mockGastoPorDia}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="data" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: number) => `R$ ${v.toLocaleString("pt-BR")}`} />
+                  <XAxis dataKey="data" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <Tooltip formatter={(v: number) => `R$ ${v.toLocaleString("pt-BR")}`} contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))", fontSize: "12px" }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="meta" name="Meta Ads" stroke="#1877F2" strokeWidth={2} dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="google" name="Google Ads" stroke="#EA4335" strokeWidth={2} dot={{ r: 3 }} />

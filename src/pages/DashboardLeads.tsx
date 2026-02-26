@@ -55,9 +55,9 @@ const DashboardLeads = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">Fila de Leads</h1>
             <p className="text-sm text-muted-foreground font-body mt-1">Gerencie e atribua os leads dos formulários.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-48 font-body">
+              <SelectTrigger className="w-full sm:w-48 font-body">
                 <SelectValue placeholder="Filtrar status" />
               </SelectTrigger>
               <SelectContent>
@@ -76,13 +76,13 @@ const DashboardLeads = () => {
 
         {/* Summary pills */}
         <div className="flex gap-3 flex-wrap">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-body font-medium">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400 text-xs font-body font-medium">
             <Clock className="w-3.5 h-3.5" /> {pendingCount} pendentes
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-body font-medium">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-400 text-xs font-body font-medium">
             <User className="w-3.5 h-3.5" /> {activeCount} em atendimento
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-body font-medium">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400 text-xs font-body font-medium">
             <CheckCircle2 className="w-3.5 h-3.5" /> {doneCount} concluídos
           </div>
         </div>
@@ -94,11 +94,11 @@ const DashboardLeads = () => {
             return (
               <Card key={lead.id}>
                 <CardContent className="p-4 md:p-5">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                   <div className="flex flex-col gap-3">
                     {/* Lead info */}
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-body font-semibold text-foreground">{lead.nome}</h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-body font-semibold text-foreground text-sm sm:text-base">{lead.nome}</h3>
                         <Badge variant={config.variant} className="text-xs font-body gap-1">
                           <config.icon className={`w-3 h-3 ${config.color}`} />
                           {config.label}
@@ -124,10 +124,10 @@ const DashboardLeads = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                       {lead.status === "pendente" && (
-                        <Select onValueChange={(v) => handleAssign(lead.id, v)}>
-                          <SelectTrigger className="w-44 font-body text-xs h-9">
+                         <Select onValueChange={(v) => handleAssign(lead.id, v)}>
+                          <SelectTrigger className="w-full sm:w-44 font-body text-xs h-9">
                             <SelectValue placeholder="Atribuir atendente" />
                           </SelectTrigger>
                           <SelectContent>
