@@ -10,13 +10,16 @@ import {
   mockGastoPorDia,
   mockCampanhas,
   platformConfig,
-  type AdsPlatform,
 } from "@/data/mockAds";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { TrendingUp, DollarSign, Users, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import InfoTooltip from "@/components/dashboard/InfoTooltip";
+import DateRangeFilter from "@/components/dashboard/ads/DateRangeFilter";
+import CampaignRanking from "@/components/dashboard/ads/CampaignRanking";
+import GoalsAlerts from "@/components/dashboard/ads/GoalsAlerts";
+import ConversionFunnel from "@/components/dashboard/ads/ConversionFunnel";
 
 const tooltips: Record<string, string> = {
   leads: "Quantidade de potenciais clientes captados através dos formulários de anúncios.",
@@ -30,6 +33,7 @@ const tooltips: Record<string, string> = {
 
 const DashboardAds = () => {
   const [filterPlatform, setFilterPlatform] = useState<string>("todas");
+  const [dateRange, setDateRange] = useState("30d");
 
   const totalLeads = mockCanaisResumo.reduce((s, c) => s + c.leads, 0);
   const totalGasto = mockCanaisResumo.reduce((s, c) => s + c.gastoTotal, 0);
@@ -49,8 +53,8 @@ const DashboardAds = () => {
   }));
 
   const statusColors: Record<string, string> = {
-    ativa: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    pausada: "bg-amber-100 text-amber-700 border-amber-200",
+    ativa: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
+    pausada: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
     encerrada: "bg-muted text-muted-foreground border-border",
   };
 
@@ -65,17 +69,20 @@ const DashboardAds = () => {
               Acompanhe o desempenho de Meta Ads, Google Ads e TikTok Ads em um só lugar.
             </p>
           </div>
-          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-            <SelectTrigger className="w-48 font-body">
-              <SelectValue placeholder="Filtrar plataforma" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas as plataformas</SelectItem>
-              <SelectItem value="meta">📘 Meta Ads</SelectItem>
-              <SelectItem value="google">🔍 Google Ads</SelectItem>
-              <SelectItem value="tiktok">🎵 TikTok Ads</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3 flex-wrap">
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+            <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+              <SelectTrigger className="w-48 font-body">
+                <SelectValue placeholder="Filtrar plataforma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as plataformas</SelectItem>
+                <SelectItem value="meta">📘 Meta Ads</SelectItem>
+                <SelectItem value="google">🔍 Google Ads</SelectItem>
+                <SelectItem value="tiktok">🎵 TikTok Ads</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* KPI Cards */}
@@ -155,6 +162,12 @@ const DashboardAds = () => {
           </Card>
         </div>
 
+        {/* Goals & Funnel Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <GoalsAlerts />
+          <ConversionFunnel />
+        </div>
+
         {/* Channel Comparison Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {mockCanaisResumo.map((canal) => (
@@ -200,9 +213,11 @@ const DashboardAds = () => {
           ))}
         </div>
 
+        {/* Campaign Ranking */}
+        <CampaignRanking campanhas={campanhasFiltradas} />
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Leads por dia */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-base font-body">Leads por Dia / Plataforma</CardTitle>
@@ -223,7 +238,6 @@ const DashboardAds = () => {
             </CardContent>
           </Card>
 
-          {/* Pie chart leads */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-body">Distribuição de Leads</CardTitle>
