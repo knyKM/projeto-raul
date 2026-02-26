@@ -86,22 +86,22 @@ const DashboardAds = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <Users className="w-4 h-4" />
                 <span className="text-xs font-body">Total Leads</span>
                 <InfoTooltip text={tooltips.leads} />
               </div>
               <p className="text-xl sm:text-2xl font-display font-bold text-foreground">{totalLeads}</p>
-              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
-                <ArrowUpRight className="w-3 h-3" /> +12% vs semana anterior
+              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1 truncate">
+                <ArrowUpRight className="w-3 h-3 shrink-0" /> +12%
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <DollarSign className="w-4 h-4" />
                 <span className="text-xs font-body">Gasto Total</span>
@@ -110,13 +110,13 @@ const DashboardAds = () => {
               <p className="text-xl sm:text-2xl font-display font-bold text-foreground truncate">
                 R$ {totalGasto.toLocaleString("pt-BR")}
               </p>
-              <p className="text-xs text-destructive font-body flex items-center gap-0.5 mt-1">
-                <ArrowUpRight className="w-3 h-3" /> +8% vs semana anterior
+              <p className="text-xs text-destructive font-body flex items-center gap-0.5 mt-1 truncate">
+                <ArrowUpRight className="w-3 h-3 shrink-0" /> +8%
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs font-body">Receita Gerada</span>
@@ -125,13 +125,13 @@ const DashboardAds = () => {
               <p className="text-xl sm:text-2xl font-display font-bold text-foreground truncate">
                 R$ {totalReceita.toLocaleString("pt-BR")}
               </p>
-              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
-                <ArrowUpRight className="w-3 h-3" /> +18% vs semana anterior
+              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1 truncate">
+                <ArrowUpRight className="w-3 h-3 shrink-0" /> +18%
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <Target className="w-4 h-4" />
                 <span className="text-xs font-body">CPL Médio</span>
@@ -140,13 +140,13 @@ const DashboardAds = () => {
               <p className="text-xl sm:text-2xl font-display font-bold text-foreground">
                 R$ {cplGeral.toFixed(2)}
               </p>
-              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
-                <ArrowDownRight className="w-3 h-3" /> -5% vs semana anterior
+              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1 truncate">
+                <ArrowDownRight className="w-3 h-3 shrink-0" /> -5%
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs font-body">ROAS Geral</span>
@@ -155,8 +155,8 @@ const DashboardAds = () => {
               <p className="text-xl sm:text-2xl font-display font-bold text-foreground">
                 {roasGeral.toFixed(2)}x
               </p>
-              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
-                <ArrowUpRight className="w-3 h-3" /> +0.3 vs semana anterior
+              <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1 truncate">
+                <ArrowUpRight className="w-3 h-3 shrink-0" /> +0.3
               </p>
             </CardContent>
           </Card>
@@ -223,7 +223,7 @@ const DashboardAds = () => {
               <CardTitle className="text-base font-body">Leads por Dia / Plataforma</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={mockLeadsPorDia}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                    <XAxis dataKey="data" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
@@ -245,23 +245,30 @@ const DashboardAds = () => {
             <CardContent className="flex items-center justify-center">
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
-                  <Pie
+                   <Pie
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
-                    outerRadius={90}
+                    innerRadius={40}
+                    outerRadius={70}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={false}
+                    label={false}
                   >
                     {pieData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                 <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))", fontSize: "12px" }} />
                 </PieChart>
               </ResponsiveContainer>
+              <div className="flex flex-wrap gap-2 justify-center mt-3">
+                {pieData.map((entry) => (
+                  <div key={entry.name} className="flex items-center gap-1.5 text-xs font-body text-muted-foreground">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                    {entry.name}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -40,7 +40,7 @@ const AnimatedCounter = ({ target, suffix }: { target: number; suffix: string })
 
   return (
     <div ref={ref} className="text-center">
-      <p className="font-display text-4xl md:text-5xl font-bold text-gold">
+      <p className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gold">
         {count.toLocaleString("pt-BR")}{suffix}
       </p>
     </div>
@@ -49,10 +49,10 @@ const AnimatedCounter = ({ target, suffix }: { target: number; suffix: string })
 
 const StatsBar = () => {
   return (
-    <section className="relative py-16 bg-navy border-y border-gold/10">
+    <section className="relative py-10 sm:py-16 bg-navy border-y border-gold/10">
       <div className="absolute inset-0 bg-gradient-to-r from-navy-dark/50 via-transparent to-navy-dark/50" />
       <div className="relative container mx-auto px-4">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
               <AnimatedCounter target={stat.value} suffix={stat.suffix} />
