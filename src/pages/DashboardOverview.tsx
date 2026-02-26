@@ -27,7 +27,7 @@ const DashboardOverview = () => {
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {stats.map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4 md:p-6">
@@ -37,25 +37,25 @@ const DashboardOverview = () => {
                     <span className="text-xs font-body text-emerald-600 font-medium">{stat.change}</span>
                   )}
                 </div>
-                <p className="text-2xl font-bold font-display text-foreground">{stat.value}</p>
+                <p className="text-xl sm:text-2xl font-bold font-display text-foreground">{stat.value}</p>
                 <p className="text-xs text-muted-foreground font-body mt-1">{stat.label}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Bar chart */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="font-display text-base">Acessos & Cadastros (Semana)</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={mockAccessByDay}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={30} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "8px",
@@ -120,7 +120,7 @@ const DashboardOverview = () => {
           <CardContent>
             <div className="space-y-3">
               {recentLeads.map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                <div key={lead.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50 border border-border">
                   <div>
                     <p className="font-body font-medium text-sm text-foreground">{lead.nome}</p>
                     <p className="text-xs text-muted-foreground font-body">{lead.telefone} · {lead.tipo}</p>

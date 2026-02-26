@@ -9,12 +9,12 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-navy-dark">
-      {/* Subtle geometric accents */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gold/[0.03] blur-3xl -translate-y-1/2 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-gold/[0.02] blur-3xl translate-y-1/2 -translate-x-1/3" />
+      {/* Subtle geometric accents - contained within section */}
+      <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] rounded-full bg-gold/[0.03] blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] rounded-full bg-gold/[0.02] blur-3xl translate-y-1/2 -translate-x-1/3" />
       <div className="absolute inset-0 bg-gradient-to-b from-navy-dark via-navy to-navy-dark" />
       
-      <div className="relative z-10 container mx-auto px-4 text-center pt-28 pb-20">
+      <div className="relative z-10 container mx-auto px-4 text-center pt-24 sm:pt-28 pb-16 sm:pb-20">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -29,7 +29,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+          className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
         >
           <span className="text-primary-foreground">Seu carro novo</span><br />
           <span className="text-gradient-gold">com tranquilidade</span>
@@ -39,7 +39,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="font-body text-gold-light/60 text-lg md:text-xl max-w-xl mx-auto mb-6 leading-relaxed"
+          className="font-body text-gold-light/60 text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-6 leading-relaxed px-2"
         >
           Consórcio de veículos sem juros e sem entrada obrigatória. Carros, motos e caminhões.
         </motion.p>
@@ -48,7 +48,7 @@ const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mb-12 text-gold-light/40 font-body text-sm"
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 sm:mb-12 text-gold-light/40 font-body text-xs sm:text-sm"
         >
           <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-gold/50" /> Sem juros</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-gold/50" /> Sem entrada</span>
