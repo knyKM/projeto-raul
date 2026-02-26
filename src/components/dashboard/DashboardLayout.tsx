@@ -1,12 +1,13 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
   { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList },
+  { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
 ];
