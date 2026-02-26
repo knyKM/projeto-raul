@@ -16,6 +16,17 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { TrendingUp, DollarSign, Users, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import InfoTooltip from "@/components/dashboard/InfoTooltip";
+
+const tooltips: Record<string, string> = {
+  leads: "Quantidade de potenciais clientes captados através dos formulários de anúncios.",
+  gasto: "Valor total investido em campanhas de anúncios na plataforma.",
+  receita: "Receita gerada a partir dos leads convertidos em vendas de consórcio.",
+  cpl: "Custo por Lead — quanto você paga, em média, para conquistar cada lead. Calculado: Gasto ÷ Leads.",
+  roas: "Return on Ad Spend — retorno sobre o investimento em ads. Calculado: Receita ÷ Gasto. Acima de 1x significa lucro.",
+  impressoes: "Número de vezes que seus anúncios foram exibidos para os usuários.",
+  ctr: "Click-Through Rate — percentual de pessoas que clicaram no anúncio após vê-lo. Calculado: Cliques ÷ Impressões × 100.",
+};
 
 const DashboardAds = () => {
   const [filterPlatform, setFilterPlatform] = useState<string>("todas");
@@ -71,9 +82,10 @@ const DashboardAds = () => {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <Users className="w-4 h-4" />
                 <span className="text-xs font-body">Total Leads</span>
+                <InfoTooltip text={tooltips.leads} />
               </div>
               <p className="text-2xl font-display font-bold text-foreground">{totalLeads}</p>
               <p className="text-xs text-emerald-600 font-body flex items-center gap-0.5 mt-1">
@@ -83,9 +95,10 @@ const DashboardAds = () => {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <DollarSign className="w-4 h-4" />
                 <span className="text-xs font-body">Gasto Total</span>
+                <InfoTooltip text={tooltips.gasto} />
               </div>
               <p className="text-2xl font-display font-bold text-foreground">
                 R$ {totalGasto.toLocaleString("pt-BR")}
@@ -97,9 +110,10 @@ const DashboardAds = () => {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs font-body">Receita Gerada</span>
+                <InfoTooltip text={tooltips.receita} />
               </div>
               <p className="text-2xl font-display font-bold text-foreground">
                 R$ {totalReceita.toLocaleString("pt-BR")}
@@ -111,9 +125,10 @@ const DashboardAds = () => {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <Target className="w-4 h-4" />
                 <span className="text-xs font-body">CPL Médio</span>
+                <InfoTooltip text={tooltips.cpl} />
               </div>
               <p className="text-2xl font-display font-bold text-foreground">
                 R$ {cplGeral.toFixed(2)}
@@ -125,9 +140,10 @@ const DashboardAds = () => {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs font-body">ROAS Geral</span>
+                <InfoTooltip text={tooltips.roas} />
               </div>
               <p className="text-2xl font-display font-bold text-foreground">
                 {roasGeral.toFixed(2)}x
@@ -155,27 +171,27 @@ const DashboardAds = () => {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm font-body">
                   <div>
-                    <p className="text-muted-foreground text-xs">Leads</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">Leads <InfoTooltip text={tooltips.leads} /></p>
                     <p className="font-semibold text-foreground">{canal.leads}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs">CPL</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">CPL <InfoTooltip text={tooltips.cpl} /></p>
                     <p className="font-semibold text-foreground">R$ {canal.cpl.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs">Gasto</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">Gasto <InfoTooltip text={tooltips.gasto} /></p>
                     <p className="font-semibold text-foreground">R$ {canal.gastoTotal.toLocaleString("pt-BR")}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs">ROAS</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">ROAS <InfoTooltip text={tooltips.roas} /></p>
                     <p className="font-semibold text-foreground">{canal.roas.toFixed(2)}x</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs">Impressões</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">Impressões <InfoTooltip text={tooltips.impressoes} /></p>
                     <p className="font-semibold text-foreground">{(canal.impressoes / 1000).toFixed(0)}k</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs">CTR</p>
+                    <p className="text-muted-foreground text-xs flex items-center gap-1">CTR <InfoTooltip text={tooltips.ctr} /></p>
                     <p className="font-semibold text-foreground">{canal.ctr}%</p>
                   </div>
                 </div>
@@ -273,11 +289,11 @@ const DashboardAds = () => {
                     <TableHead className="font-body">Campanha</TableHead>
                     <TableHead className="font-body">Plataforma</TableHead>
                     <TableHead className="font-body">Status</TableHead>
-                    <TableHead className="font-body text-right">Gasto</TableHead>
-                    <TableHead className="font-body text-right">Leads</TableHead>
-                    <TableHead className="font-body text-right">CPL</TableHead>
-                    <TableHead className="font-body text-right">Receita</TableHead>
-                    <TableHead className="font-body text-right">ROAS</TableHead>
+                    <TableHead className="font-body text-right"><span className="flex items-center justify-end gap-1">Gasto <InfoTooltip text={tooltips.gasto} /></span></TableHead>
+                    <TableHead className="font-body text-right"><span className="flex items-center justify-end gap-1">Leads <InfoTooltip text={tooltips.leads} /></span></TableHead>
+                    <TableHead className="font-body text-right"><span className="flex items-center justify-end gap-1">CPL <InfoTooltip text={tooltips.cpl} /></span></TableHead>
+                    <TableHead className="font-body text-right"><span className="flex items-center justify-end gap-1">Receita <InfoTooltip text={tooltips.receita} /></span></TableHead>
+                    <TableHead className="font-body text-right"><span className="flex items-center justify-end gap-1">ROAS <InfoTooltip text={tooltips.roas} /></span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
