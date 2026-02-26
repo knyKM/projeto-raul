@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "./NotificationBell";
 
 const navItems = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
@@ -50,7 +52,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-border space-y-1">
+          <div className="flex items-center justify-between px-3 py-1">
+            <NotificationBell />
+            <ThemeToggle />
+          </div>
           <Link
             to="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -69,6 +75,10 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             <img src={logo} alt="Mogibens" className="h-8 w-auto rounded-md" />
             <span className="font-display text-sm font-semibold text-foreground">Painel</span>
           </Link>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <ThemeToggle />
+          </div>
         </header>
 
         {/* Mobile nav */}
