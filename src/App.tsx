@@ -9,6 +9,7 @@ import DashboardOverview from "./pages/DashboardOverview";
 import DashboardLeads from "./pages/DashboardLeads";
 import DashboardGeo from "./pages/DashboardGeo";
 import DashboardAtendentes from "./pages/DashboardAtendentes";
+import DashboardAds from "./pages/DashboardAds";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/dashboard/leads" element={<DashboardLeads />} />
           <Route path="/dashboard/geo" element={<DashboardGeo />} />
           <Route path="/dashboard/atendentes" element={<DashboardAtendentes />} />
+          <Route path="/dashboard/ads" element={<DashboardAds />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
