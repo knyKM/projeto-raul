@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mockLeads, mockAtendentes, type Lead } from "@/data/mockDashboard";
-import { Clock, CheckCircle2, User, Phone, Mail, MessageSquare, UserPlus } from "lucide-react";
+import { Clock, CheckCircle2, User, Phone, Mail, MessageSquare, UserPlus, PhoneOutgoing } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 
@@ -17,8 +20,10 @@ const statusConfig = {
 const DashboardLeads = () => {
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [filterStatus, setFilterStatus] = useState<string>("todos");
+  const [mailingOpen, setMailingOpen] = useState(false);
 
   const filtered = filterStatus === "todos" ? leads : leads.filter((l) => l.status === filterStatus);
+  const mailingLeads = leads.filter((l) => l.status !== "concluido");
 
   const handleAssign = (leadId: string, atendenteNome: string) => {
     setLeads((prev) =>
@@ -50,17 +55,23 @@ const DashboardLeads = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">Fila de Leads</h1>
             <p className="text-sm text-muted-foreground font-body mt-1">Gerencie e atribua os leads dos formulários.</p>
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-48 font-body">
-              <SelectValue placeholder="Filtrar status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos ({leads.length})</SelectItem>
-              <SelectItem value="pendente">Pendentes ({pendingCount})</SelectItem>
-              <SelectItem value="em_atendimento">Em Atendimento ({activeCount})</SelectItem>
-              <SelectItem value="concluido">Concluídos ({doneCount})</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-48 font-body">
+                <SelectValue placeholder="Filtrar status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos ({leads.length})</SelectItem>
+                <SelectItem value="pendente">Pendentes ({pendingCount})</SelectItem>
+                <SelectItem value="em_atendimento">Em Atendimento ({activeCount})</SelectItem>
+                <SelectItem value="concluido">Concluídos ({doneCount})</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
+              <PhoneOutgoing className="w-4 h-4" />
+              Montar Mailing
+            </Button>
+          </div>
         </div>
 
         {/* Summary pills */}
@@ -148,6 +159,56 @@ const DashboardLeads = () => {
           )}
         </div>
       </div>
+
+      {/* Mailing Dialog */}
+      <Dialog open={mailingOpen} onOpenChange={setMailingOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <PhoneOutgoing className="w-5 h-5 text-primary" />
+              Mailing para Discador
+            </DialogTitle>
+            <DialogDescription className="font-body">
+              {mailingLeads.length} lead{mailingLeads.length !== 1 ? "s" : ""} disponíve{mailingLeads.length !== 1 ? "is" : "l"} para discagem (pendentes e em atendimento).
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-body">Nome</TableHead>
+                  <TableHead className="font-body">Telefone</TableHead>
+                  <TableHead className="font-body">Tipo</TableHead>
+                  <TableHead className="font-body">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mailingLeads.map((lead) => (
+                  <TableRow key={lead.id}>
+                    <TableCell className="font-body font-medium">{lead.nome}</TableCell>
+                    <TableCell className="font-body">{lead.telefone}</TableCell>
+                    <TableCell className="font-body capitalize">{lead.tipo}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusConfig[lead.status].variant} className="text-xs font-body gap-1">
+                        {statusConfig[lead.status].label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" size="sm" className="font-body" onClick={() => setMailingOpen(false)}>
+              Fechar
+            </Button>
+            <Button variant="gold" size="sm" className="font-body gap-2" onClick={() => { toast.success("Mailing exportado com sucesso!"); setMailingOpen(false); }}>
+              <PhoneOutgoing className="w-4 h-4" />
+              Exportar Mailing
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
