@@ -30,15 +30,15 @@ const DashboardOverview = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {stats.map((stat) => (
             <Card key={stat.label}>
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between mb-3">
                   <stat.icon className="w-4 h-4 text-muted-foreground" />
                   {stat.change && (
                     <span className="text-xs font-body text-emerald-600 font-medium">{stat.change}</span>
                   )}
                 </div>
-                <p className="text-xl sm:text-2xl font-bold font-display text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground font-body mt-1">{stat.label}</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold font-display text-foreground truncate">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-body mt-1 truncate">{stat.label}</p>
               </CardContent>
             </Card>
           ))}

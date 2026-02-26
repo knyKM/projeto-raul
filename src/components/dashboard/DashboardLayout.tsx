@@ -18,7 +18,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen flex bg-muted/40">
+    <div className="min-h-screen flex bg-muted/40 max-w-[100vw] overflow-x-hidden">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-card border-r border-border">
         <div className="p-4 border-b border-border">
@@ -68,7 +68,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Top bar mobile */}
         <header className="md:hidden flex items-center justify-between px-4 h-14 bg-card border-b border-border">
           <Link to="/" className="flex items-center gap-2">
@@ -82,7 +82,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Mobile nav */}
-        <nav className="md:hidden flex items-center gap-1 px-4 py-2 bg-card border-b border-border overflow-x-auto">
+        <nav className="md:hidden flex items-center gap-1 px-4 py-2 bg-card border-b border-border overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
