@@ -12,6 +12,8 @@ import DashboardAtendentes from "./pages/DashboardAtendentes";
 import DashboardAds from "./pages/DashboardAds";
 import DashboardLandingPages from "./pages/DashboardLandingPages";
 import LandingPageView from "./pages/LandingPageView";
+import SetupWizard from "./pages/SetupWizard";
+import DashboardSettings from "./pages/DashboardSettings";
 
 const queryClient = new QueryClient();
 
@@ -23,12 +25,14 @@ const App = () => (
       <HashRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/setup" element={<SetupWizard />} />
           <Route path="/dashboard" element={<DashboardOverview />} />
           <Route path="/dashboard/leads" element={<DashboardLeads />} />
           <Route path="/dashboard/geo" element={<DashboardGeo />} />
           <Route path="/dashboard/atendentes" element={<DashboardAtendentes />} />
           <Route path="/dashboard/ads" element={<DashboardAds />} />
           <Route path="/dashboard/landing-pages" element={<DashboardLandingPages />} />
+          <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

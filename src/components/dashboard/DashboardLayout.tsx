@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings },
 ];
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
