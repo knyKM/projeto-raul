@@ -10,6 +10,8 @@ import DashboardLeads from "./pages/DashboardLeads";
 import DashboardGeo from "./pages/DashboardGeo";
 import DashboardAtendentes from "./pages/DashboardAtendentes";
 import DashboardAds from "./pages/DashboardAds";
+import DashboardLandingPages from "./pages/DashboardLandingPages";
+import LandingPageView from "./pages/LandingPageView";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/dashboard/geo" element={<DashboardGeo />} />
           <Route path="/dashboard/atendentes" element={<DashboardAtendentes />} />
           <Route path="/dashboard/ads" element={<DashboardAds />} />
+          <Route path="/dashboard/landing-pages" element={<DashboardLandingPages />} />
+          <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>

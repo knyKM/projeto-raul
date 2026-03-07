@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
   { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList },
   { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone },
+  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
 ];
