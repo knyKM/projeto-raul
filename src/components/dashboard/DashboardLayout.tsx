@@ -13,6 +13,7 @@ const navItems = [
   { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings },
 ];
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
