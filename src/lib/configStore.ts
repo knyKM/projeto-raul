@@ -1,7 +1,12 @@
-// Configuration store using localStorage
+// Configuration store — uses localStorage as local cache + syncs with API when available
+import { getApiUrl, saveConfigToApi, loadConfigFromApi } from './apiClient';
+
 export type LicenseTier = 'free' | 'pro' | 'proplus';
 
 export interface AppConfig {
+  // API
+  apiUrl: string;
+
   // License
   licenseKey: string;
   licenseTier: LicenseTier;
@@ -40,6 +45,7 @@ export interface AppConfig {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
+  apiUrl: '',
   licenseKey: '',
   licenseTier: 'free',
   licenseActivated: false,
@@ -66,6 +72,7 @@ const DEFAULT_CONFIG: AppConfig = {
 
 const STORAGE_KEY = 'mogibens_config';
 
+// Local read (always available, instant)
 export function getConfig(): AppConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -76,11 +83,34 @@ export function getConfig(): AppConfig {
   }
 }
 
+// Save locally + sync to API if connected
 export function saveConfig(config: Partial<AppConfig>): AppConfig {
   const current = getConfig();
   const updated = { ...current, ...config };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+  // Fire-and-forget sync to API
+  if (getApiUrl()) {
+    saveConfigToApi(updated).catch(() => {
+      // silently fail — localStorage is the fallback
+    });
+  }
+
   return updated;
+}
+
+// Load from API and merge into localStorage
+export async function syncConfigFromApi(): Promise<AppConfig> {
+  const apiUrl = getApiUrl();
+  if (!apiUrl) return getConfig();
+
+  const res = await loadConfigFromApi();
+  if (res.ok && res.data) {
+    const merged = { ...DEFAULT_CONFIG, ...res.data } as AppConfig;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    return merged;
+  }
+  return getConfig();
 }
 
 export function resetConfig(): void {
