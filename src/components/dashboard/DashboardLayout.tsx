@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
