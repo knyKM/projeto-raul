@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText } from "lucide-react";
 import logo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
   { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList },
   { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone },
+  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
 ];
