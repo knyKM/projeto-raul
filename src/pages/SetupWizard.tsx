@@ -140,7 +140,7 @@ const SetupWizard = () => {
                     <CardContent className="space-y-2">
                       {info.features.map((f) => (
                         <div key={f} className="flex items-start gap-2 text-xs font-body">
-                          <Check className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                          <Check className="w-3.5 h-3.5 text-secondary mt-0.5 shrink-0" />
                           <span className="text-foreground">{f}</span>
                         </div>
                       ))}
