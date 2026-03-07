@@ -6,15 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Check, ChevronRight, ChevronLeft, Database, Key, Rocket, Shield, Crown, Star, Zap } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Database, Key, Rocket, Shield, Crown, Star, Zap, Server, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { saveConfig, LicenseTier, TIER_FEATURES, getConfig } from "@/lib/configStore";
+import { setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-mogibens.png";
 
 const steps = [
   { id: 1, title: "Licença", icon: Key },
-  { id: 2, title: "Banco de Dados", icon: Database },
-  { id: 3, title: "Finalizar", icon: Rocket },
+  { id: 2, title: "API Backend", icon: Server },
+  { id: 3, title: "Banco de Dados", icon: Database },
+  { id: 4, title: "Finalizar", icon: Rocket },
 ];
 
 const tierIcons: Record<LicenseTier, typeof Star> = {
@@ -22,6 +24,8 @@ const tierIcons: Record<LicenseTier, typeof Star> = {
   pro: Crown,
   proplus: Zap,
 };
+
+type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 
 const SetupWizard = () => {
   const navigate = useNavigate();
@@ -32,19 +36,60 @@ const SetupWizard = () => {
   const [selectedTier, setSelectedTier] = useState<LicenseTier>(existing.licenseTier || "free");
   const [licenseKey, setLicenseKey] = useState(existing.licenseKey || "");
 
-  // Step 2 — Database
+  // Step 2 — API URL
+  const [apiUrl, setApiUrlState] = useState(existing.apiUrl || "http://localhost:3001");
+  const [apiStatus, setApiStatus] = useState<TestStatus>('idle');
+  const [apiError, setApiError] = useState('');
+
+  // Step 3 — Database
   const [dbHost, setDbHost] = useState(existing.dbHost || "");
   const [dbPort, setDbPort] = useState(existing.dbPort || "5432");
   const [dbName, setDbName] = useState(existing.dbName || "");
   const [dbUser, setDbUser] = useState(existing.dbUser || "");
   const [dbPassword, setDbPassword] = useState(existing.dbPassword || "");
   const [dbSsl, setDbSsl] = useState(existing.dbSslEnabled ?? true);
+  const [dbStatus, setDbStatus] = useState<TestStatus>('idle');
+  const [dbError, setDbError] = useState('');
 
   const canProceedStep1 = selectedTier === "free" || licenseKey.trim().length >= 8;
-  const canProceedStep2 = dbHost.trim() !== "" && dbName.trim() !== "" && dbUser.trim() !== "";
+  const canProceedStep2 = apiUrl.trim() !== "" && apiStatus === 'success';
+  const canProceedStep3 = dbHost.trim() !== "" && dbName.trim() !== "" && dbUser.trim() !== "";
+
+  const handleTestApi = async () => {
+    setApiStatus('testing');
+    setApiError('');
+    setApiUrl(apiUrl);
+    const res = await testApiConnection();
+    if (res.ok) {
+      setApiStatus('success');
+    } else {
+      setApiStatus('error');
+      setApiError(res.error || 'Não foi possível conectar');
+    }
+  };
+
+  const handleTestDb = async () => {
+    setDbStatus('testing');
+    setDbError('');
+    const res = await testDbConnection({
+      host: dbHost,
+      port: dbPort,
+      database: dbName,
+      user: dbUser,
+      password: dbPassword,
+      ssl: dbSsl,
+    });
+    if (res.ok) {
+      setDbStatus('success');
+    } else {
+      setDbStatus('error');
+      setDbError(res.error || 'Falha na conexão com o banco');
+    }
+  };
 
   const handleFinish = () => {
     saveConfig({
+      apiUrl,
       licenseTier: selectedTier,
       licenseKey,
       licenseActivated: true,
@@ -58,6 +103,17 @@ const SetupWizard = () => {
     });
     navigate("/dashboard");
   };
+
+  const StatusIcon = ({ status, error }: { status: TestStatus; error: string }) => (
+    <div className="flex items-center gap-2 mt-2">
+      {status === 'testing' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+      {status === 'testing' && <span className="text-xs text-muted-foreground font-body">Testando conexão...</span>}
+      {status === 'success' && <CheckCircle2 className="w-4 h-4 text-secondary" />}
+      {status === 'success' && <span className="text-xs text-secondary font-body">Conectado com sucesso!</span>}
+      {status === 'error' && <XCircle className="w-4 h-4 text-destructive" />}
+      {status === 'error' && <span className="text-xs text-destructive font-body">{error}</span>}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -176,53 +232,117 @@ const SetupWizard = () => {
           </div>
         )}
 
-        {/* STEP 2 — Database */}
+        {/* STEP 2 — API Backend */}
         {step === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Server className="w-5 h-5 text-secondary" />
+                Servidor da API (Backend)
+              </CardTitle>
+              <CardDescription>
+                Informe a URL da sua API Node.js que conecta ao banco de dados. Todas as configurações serão persistidas através dela.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="apiUrl" className="font-body">URL da API</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="apiUrl"
+                    placeholder="http://localhost:3001"
+                    value={apiUrl}
+                    onChange={(e) => {
+                      setApiUrlState(e.target.value);
+                      setApiStatus('idle');
+                    }}
+                    className="font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleTestApi}
+                    disabled={apiStatus === 'testing' || !apiUrl.trim()}
+                    className="font-body shrink-0"
+                  >
+                    {apiStatus === 'testing' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Testar'}
+                  </Button>
+                </div>
+                <StatusIcon status={apiStatus} error={apiError} />
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body space-y-2">
+                <p className="font-medium text-foreground">💡 Como funciona</p>
+                <p>O frontend (este painel) se comunica com uma API Node.js via HTTP. A API é responsável por:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Conectar e persistir dados no PostgreSQL</li>
+                  <li>Gerenciar configurações, leads, métricas de ads</li>
+                  <li>Integrar com Meta Ads, Google Ads, TikTok Ads, WhatsApp</li>
+                </ul>
+                <p className="mt-2">A API deve responder em <code className="bg-muted px-1 rounded">GET /health</code> com <code className="bg-muted px-1 rounded">{`{"status":"ok"}`}</code>.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 3 — Database */}
+        {step === 3 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-secondary" />
                 Conexão com o Banco de Dados
               </CardTitle>
-              <CardDescription>Informe os dados de acesso ao seu servidor PostgreSQL.</CardDescription>
+              <CardDescription>Informe os dados de acesso ao seu servidor PostgreSQL. A API usará essas credenciais.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="dbHost" className="font-body">Host / IP</Label>
-                  <Input id="dbHost" placeholder="db.exemplo.com" value={dbHost} onChange={(e) => setDbHost(e.target.value)} />
+                  <Input id="dbHost" placeholder="localhost" value={dbHost} onChange={(e) => { setDbHost(e.target.value); setDbStatus('idle'); }} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbPort" className="font-body">Porta</Label>
-                  <Input id="dbPort" placeholder="5432" value={dbPort} onChange={(e) => setDbPort(e.target.value)} />
+                  <Input id="dbPort" placeholder="5432" value={dbPort} onChange={(e) => { setDbPort(e.target.value); setDbStatus('idle'); }} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbName" className="font-body">Nome do Banco</Label>
-                  <Input id="dbName" placeholder="mogibens_db" value={dbName} onChange={(e) => setDbName(e.target.value)} />
+                  <Input id="dbName" placeholder="mogibens_db" value={dbName} onChange={(e) => { setDbName(e.target.value); setDbStatus('idle'); }} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbUser" className="font-body">Usuário</Label>
-                  <Input id="dbUser" placeholder="admin" value={dbUser} onChange={(e) => setDbUser(e.target.value)} />
+                  <Input id="dbUser" placeholder="postgres" value={dbUser} onChange={(e) => { setDbUser(e.target.value); setDbStatus('idle'); }} />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="dbPassword" className="font-body">Senha</Label>
-                <Input id="dbPassword" type="password" placeholder="••••••••" value={dbPassword} onChange={(e) => setDbPassword(e.target.value)} />
+                <Input id="dbPassword" type="password" placeholder="••••••••" value={dbPassword} onChange={(e) => { setDbPassword(e.target.value); setDbStatus('idle'); }} />
               </div>
               <div className="flex items-center gap-3">
-                <Switch id="dbSsl" checked={dbSsl} onCheckedChange={setDbSsl} />
+                <Switch id="dbSsl" checked={dbSsl} onCheckedChange={(v) => { setDbSsl(v); setDbStatus('idle'); }} />
                 <Label htmlFor="dbSsl" className="font-body text-sm">Usar conexão SSL</Label>
               </div>
+
+              <Button
+                variant="outline"
+                onClick={handleTestDb}
+                disabled={dbStatus === 'testing' || !dbHost.trim() || !dbName.trim() || !dbUser.trim()}
+                className="font-body"
+              >
+                {dbStatus === 'testing' ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Database className="w-4 h-4 mr-1" />}
+                Testar Conexão
+              </Button>
+              <StatusIcon status={dbStatus} error={dbError} />
+
               <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
                 <p className="font-medium text-foreground mb-1">💡 Dica</p>
-                <p>Use o formato <code className="bg-muted px-1 rounded">host:porta</code> para conexões remotas. Certifique-se de que o banco aceita conexões externas e que o usuário tenha permissões adequadas.</p>
+                <p>Certifique-se de que o PostgreSQL aceita conexões do host onde a API está rodando e que o usuário tenha permissões adequadas.</p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* STEP 3 — Summary */}
-        {step === 3 && (
+        {/* STEP 4 — Summary */}
+        {step === 4 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -244,16 +364,16 @@ const SetupWizard = () => {
                   </p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-1">
-                  <p className="text-xs text-muted-foreground font-body">Banco de Dados</p>
-                  <p className="font-semibold text-foreground text-sm">{dbHost}:{dbPort}/{dbName}</p>
+                  <p className="text-xs text-muted-foreground font-body">API Backend</p>
+                  <p className="font-semibold text-foreground font-mono text-sm">{apiUrl}</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-1">
-                  <p className="text-xs text-muted-foreground font-body">Usuário DB</p>
-                  <p className="font-semibold text-foreground text-sm">{dbUser}</p>
+                  <p className="text-xs text-muted-foreground font-body">Banco de Dados</p>
+                  <p className="font-semibold text-foreground text-sm">{dbUser}@{dbHost}:{dbPort}/{dbName}</p>
                 </div>
               </div>
               <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
-                <p>Após a ativação, você poderá configurar integrações (Meta Ads, Google Ads, etc.) e demais parâmetros na seção <strong>Configurações</strong> do painel.</p>
+                <p>Após a ativação, todas as configurações serão persistidas no banco de dados via API. Você poderá gerenciar integrações, tokens e parâmetros na seção <strong>Configurações</strong> do painel.</p>
               </div>
             </CardContent>
           </Card>
@@ -270,10 +390,14 @@ const SetupWizard = () => {
             <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
           </Button>
 
-          {step < 3 ? (
+          {step < 4 ? (
             <Button
               onClick={() => setStep((s) => s + 1)}
-              disabled={step === 1 ? !canProceedStep1 : !canProceedStep2}
+              disabled={
+                (step === 1 && !canProceedStep1) ||
+                (step === 2 && !canProceedStep2) ||
+                (step === 3 && !canProceedStep3)
+              }
               className="font-body"
             >
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
