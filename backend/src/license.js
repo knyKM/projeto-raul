@@ -14,7 +14,7 @@
 const crypto = require('crypto');
 
 // This MUST match LICENSE_SECRET in .env
-const SECRET = process.env.LICENSE_SECRET || 'mogibens-license-secret-change-me';
+const SECRET = process.env.LICENSE_SECRET || 'sistemaleads-license-secret-change-me';
 
 const TIERS = ['pro', 'proplus'];
 
