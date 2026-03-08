@@ -26,6 +26,7 @@ const LandingPageView = () => {
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
+  const { trackFormStart, trackChatMessage } = useLandingPageTracking(slug);
 
   // Track visit + geolocation on mount
   useEffect(() => {
