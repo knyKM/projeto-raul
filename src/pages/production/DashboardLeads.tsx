@@ -55,6 +55,7 @@ const DashboardLeads = () => {
   const [stats, setStats] = useState<LeadStats>({ pendentes: "0", em_atendimento: "0", concluidos: "0", total: "0" });
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mailingOpen, setMailingOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
