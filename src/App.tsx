@@ -20,6 +20,7 @@ import DashboardAds from "./pages/production/DashboardAds";
 import DashboardLandingPages from "./pages/DashboardLandingPages";
 import DashboardUsers from "./pages/production/DashboardUsers";
 import DashboardReports from "./pages/production/DashboardReports";
+import DashboardWhatsApp from "./pages/production/DashboardWhatsApp";
 
 // Test pages (with mock data for demo/testing)
 import TestOverview from "./pages/DashboardOverview";
