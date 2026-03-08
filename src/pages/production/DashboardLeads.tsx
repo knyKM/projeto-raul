@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing, LayoutList, Columns3 } from "lucide-react";
+import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing, LayoutList, Columns3, Target } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { hasFeature } from "@/lib/featureAccess";
