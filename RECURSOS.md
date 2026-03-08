@@ -58,16 +58,37 @@ O timer atualiza automaticamente a cada 30 segundos, criando senso de urgência 
 
 ## 📊 Fila de Leads
 
-### Status do Lead
-- **Pendente** — Aguardando primeiro contato
-- **Em Atendimento** — Consultor atribuído e em contato
-- **Concluído** — Atendimento finalizado
+### Visualizações
+- **Lista** — Visualização tradicional em cards com ações rápidas
+- **Kanban** — Board com drag-and-drop entre colunas
+
+### Funil (Kanban)
+| Coluna | Descrição |
+|---|---|
+| 🟡 Novo | Lead recém-captado, aguardando primeiro contato |
+| 🔵 Em Contato | Consultor fez o primeiro contato |
+| 🟣 Negociando | Em fase de negociação/proposta |
+| 🟢 Fechado | Venda concluída |
+| 🔴 Perdido | Lead descartado ou sem interesse |
 
 ### Gestão
 - Atribuição de leads para consultores/atendentes
-- Troca de status com select rápido
+- Troca de status com select rápido ou drag-and-drop no Kanban
 - Filtro por landing page de origem
 - Contadores em tempo real (pendentes, em atendimento, concluídos)
+
+---
+
+## 🚪 Pop-up de Saída (Exit Intent)
+
+Popup inteligente exibido quando o visitante tenta sair da landing page:
+
+- **Desktop:** Detecta movimento do mouse saindo da janela
+- **Mobile:** Exibe após 30 segundos de inatividade
+- Formulário simplificado (nome + telefone)
+- Mensagem de condição especial para incentivar conversão
+- Leads captados com origem `exit_popup` para análise
+- Exibe apenas uma vez por sessão (não incomoda o visitante)
 
 ---
 
