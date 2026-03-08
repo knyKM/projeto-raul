@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { QrCode, ExternalLink } from "lucide-react";
+import { QrCode, Clock, User, Tag, Megaphone, ShieldCheck, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WaConversation } from "@/pages/production/DashboardWhatsApp";
 
@@ -13,89 +13,122 @@ interface Props {
 function formatDate(dateStr?: string) {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   });
 }
 
-const statusBadge: Record<string, { label: string; className: string }> = {
-  active: { label: "active", className: "bg-emerald-500 text-white" },
-  pending: { label: "pending", className: "bg-amber-500 text-white" },
-  expired: { label: "expired", className: "bg-muted-foreground text-white" },
+function getWindowRemaining(expires?: string) {
+  if (!expires) return null;
+  const diff = new Date(expires).getTime() - Date.now();
+  if (diff <= 0) return "Expirada";
+  const hrs = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return `${hrs}h ${mins}min restantes`;
+}
+
+const statusConfig: Record<string, { label: string; className: string; icon: string }> = {
+  active: { label: "Ativo", className: "bg-secondary/15 text-secondary border-secondary/20", icon: "🟢" },
+  pending: { label: "Aguardando", className: "bg-amber-500/15 text-amber-600 border-amber-500/20", icon: "🟡" },
+  expired: { label: "Expirado", className: "bg-muted text-muted-foreground border-border", icon: "⚪" },
 };
 
 const LeadSidebar = ({ conversation, onShowQr }: Props) => {
-  const badge = statusBadge[conversation.status];
+  const status = statusConfig[conversation.status];
+  const windowRemaining = getWindowRemaining(conversation.windowExpires);
 
   return (
-    <div className="w-72 border-l border-border bg-card overflow-y-auto shrink-0 hidden lg:block">
-      {/* Lead card */}
-      <div className="p-4 space-y-4">
-        <h3 className="font-display font-bold text-base text-foreground">Lead</h3>
+    <div className="w-[280px] border-l border-border bg-card overflow-y-auto shrink-0 hidden lg:flex flex-col">
+      {/* Profile header */}
+      <div className="p-5 text-center border-b border-border bg-gradient-to-b from-secondary/5 to-transparent">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-3 border border-secondary/10">
+          <span className="text-lg font-display font-bold text-secondary">
+            {conversation.leadName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+          </span>
+        </div>
+        <h3 className="font-display font-bold text-base text-foreground">{conversation.leadName}</h3>
+        <p className="text-xs text-muted-foreground font-body mt-0.5">{conversation.phone}</p>
+        <div className="mt-2">
+          <Badge variant="outline" className={cn("text-[10px] font-body", status.className)}>
+            {status.icon} {status.label}
+          </Badge>
+        </div>
+      </div>
 
-        <div className="space-y-3">
-          <InfoRow label="Nome:" value={conversation.leadName} />
-          <InfoRow label="Telefone:" value={conversation.phone} />
-          <InfoRow label="WA ID:" value={conversation.waId} mono />
-
-          <Separator />
-
-          <div>
-            <span className="text-xs text-muted-foreground font-body">Status:</span>
-            <div className="mt-1">
-              <Badge className={cn("text-xs font-body", badge.className)}>{badge.label}</Badge>
+      {/* Info sections */}
+      <div className="flex-1 p-4 space-y-4">
+        {/* Session info */}
+        <SidebarSection title="Sessão" icon={Clock}>
+          <InfoRow label="Início" value={formatDate(conversation.startedAt)} />
+          <InfoRow label="Expira" value={formatDate(conversation.windowExpires)} />
+          {windowRemaining && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <Timer className="w-3 h-3 text-secondary" />
+              <span className={cn(
+                "text-[10px] font-body font-semibold",
+                windowRemaining === "Expirada" ? "text-destructive" : "text-secondary"
+              )}>
+                {windowRemaining}
+              </span>
             </div>
-          </div>
+          )}
+        </SidebarSection>
 
-          <InfoRow label="Início:" value={formatDate(conversation.startedAt)} />
-          <InfoRow label="Janela expira:" value={formatDate(conversation.windowExpires)} />
-        </div>
+        <Separator />
+
+        {/* Lead context */}
+        <SidebarSection title="Contexto" icon={Tag}>
+          <InfoRow label="Agente" value={conversation.agent || "Não atribuído"} />
+          <InfoRow label="Tabulação" value={conversation.tabulation || "—"} />
+          <InfoRow label="Interesse" value={conversation.interest || "—"} highlight />
+          <InfoRow label="Ad ID" value={conversation.adId || "—"} mono />
+        </SidebarSection>
+
+        <Separator />
+
+        {/* WhatsApp ID */}
+        <SidebarSection title="Identificação" icon={ShieldCheck}>
+          <InfoRow label="WA ID" value={conversation.waId} mono />
+        </SidebarSection>
       </div>
 
-      <Separator />
-
-      {/* Context card */}
-      <div className="p-4 space-y-4">
-        <h3 className="font-display font-bold text-base text-foreground">Contexto</h3>
-
-        <div className="space-y-3">
-          <InfoRow label="Agente:" value={conversation.agent || "—"} />
-          <InfoRow label="Tabulação:" value={conversation.tabulation || "—"} />
-          <InfoRow label="Interesse:" value={conversation.interest || "—"} />
-          <InfoRow label="Ad ID:" value={conversation.adId || "—"} mono />
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* QR Code action */}
-      <div className="p-4">
+      {/* QR Code action — sticky bottom */}
+      <div className="p-4 border-t border-border bg-gradient-to-t from-secondary/3 to-transparent">
         <Button
-          variant="outline"
-          className="w-full gap-2 font-body text-sm"
+          className="w-full gap-2 font-body text-xs bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-xl h-10 shadow-sm"
           onClick={onShowQr}
         >
           <QrCode className="w-4 h-4" />
-          Gerar QR Code exclusivo
+          Atender via WhatsApp pessoal
         </Button>
-        <p className="text-[10px] text-muted-foreground font-body mt-2 text-center">
-          O atendente escaneia para abrir conversa no WhatsApp pessoal
+        <p className="text-[9px] text-muted-foreground/60 font-body mt-2 text-center leading-relaxed">
+          Gera QR Code para o atendente isolar o contato
         </p>
       </div>
     </div>
   );
 };
 
-const InfoRow = ({ label, value, mono }: { label: string; value: string; mono?: boolean }) => (
-  <div>
-    <span className="text-xs text-muted-foreground font-body">{label}</span>
-    <p className={cn("text-sm font-body font-medium text-foreground", mono && "font-mono text-xs")}>
+const SidebarSection = ({ title, icon: Icon, children }: { title: string; icon: typeof Clock; children: React.ReactNode }) => (
+  <div className="space-y-2.5">
+    <div className="flex items-center gap-2">
+      <Icon className="w-3.5 h-3.5 text-secondary/70" />
+      <h4 className="text-[11px] font-body font-bold uppercase tracking-widest text-muted-foreground">{title}</h4>
+    </div>
+    <div className="space-y-2 pl-5.5">{children}</div>
+  </div>
+);
+
+const InfoRow = ({ label, value, mono, highlight }: { label: string; value: string; mono?: boolean; highlight?: boolean }) => (
+  <div className="flex items-baseline justify-between gap-2">
+    <span className="text-[11px] text-muted-foreground/70 font-body shrink-0">{label}</span>
+    <span className={cn(
+      "text-[11px] font-body text-right truncate",
+      mono ? "font-mono text-[10px] text-muted-foreground" : "font-medium text-foreground",
+      highlight && "text-secondary font-semibold"
+    )}>
       {value}
-    </p>
+    </span>
   </div>
 );
 
