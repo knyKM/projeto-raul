@@ -15,6 +15,7 @@ const navItems: { href: string; label: string; icon: typeof LayoutDashboard; fea
   { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone, feature: "ads_central" },
   { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single", roles: ["supervisor", "administrador"] },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin, feature: "geo" },
+  { href: "/dashboard/reports", label: "Relatórios", icon: BarChart3 },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users, feature: "atendentes" },
   { href: "/dashboard/users", label: "Usuários", icon: UserCog, roles: ["administrador", "supervisor"] },
   { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings", roles: ["administrador"] },
