@@ -5,6 +5,17 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { api } from "@/lib/apiClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix default marker icon issue with webpack/vite
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
 
 interface GeoLocation {
   cidade: string;
@@ -47,6 +58,15 @@ const DashboardGeo = () => {
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   };
 
+  // Get visits with coordinates for the map
+  const mapPoints = data?.recentVisits.filter((v) => v.latitude && v.longitude) || [];
+
+  // Calculate map center
+  const defaultCenter: [number, number] = [-15.78, -47.93]; // Brazil center
+  const mapCenter: [number, number] = mapPoints.length > 0
+    ? [mapPoints[0].latitude!, mapPoints[0].longitude!]
+    : defaultCenter;
+
   return (
     <DashboardLayout>
       <LockedOverlay feature="geo">
@@ -87,6 +107,42 @@ const DashboardGeo = () => {
             </Card>
           </div>
 
+          {/* Map */}
+          {!loading && data && data.totalVisits > 0 && (
+            <Card>
+              <CardContent className="p-0 overflow-hidden rounded-lg">
+                <div className="h-[400px] w-full">
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={mapPoints.length > 0 ? 5 : 3}
+                    className="h-full w-full z-0"
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {mapPoints.map((visit) => (
+                      <Marker key={visit.id} position={[visit.latitude!, visit.longitude!]}>
+                        <Popup>
+                          <div className="text-xs space-y-1">
+                            <p className="font-semibold">
+                              📍 {visit.cidade || "Local desconhecido"}{visit.estado ? `, ${visit.estado}` : ""}
+                            </p>
+                            {visit.landing_page_slug && (
+                              <p className="text-muted-foreground">📄 {visit.landing_page_slug}</p>
+                            )}
+                            <p className="text-muted-foreground">🕐 {formatDate(visit.visited_at)}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ))}
+                  </MapContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {loading ? (
             <Card>
               <CardContent className="flex items-center justify-center py-16">
@@ -114,7 +170,6 @@ const DashboardGeo = () => {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Cities tab */}
               <TabsContent value="cities">
                 {data.locations.length === 0 ? (
                   <Card>
@@ -123,7 +178,6 @@ const DashboardGeo = () => {
                       <p className="text-muted-foreground font-body text-sm">Nenhuma cidade identificada ainda</p>
                       <p className="text-xs text-muted-foreground/60 font-body mt-1">
                         Os {data.totalVisits} acessos foram registrados sem dados de localização.
-                        Isso pode acontecer se o visitante não permitir geolocalização ou se o serviço de IP estiver indisponível.
                       </p>
                     </CardContent>
                   </Card>
@@ -163,7 +217,6 @@ const DashboardGeo = () => {
                 )}
               </TabsContent>
 
-              {/* Recent visits tab */}
               <TabsContent value="recent">
                 <Card>
                   <CardContent className="p-0">
