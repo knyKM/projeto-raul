@@ -72,6 +72,7 @@ async function initTables() {
       telefone VARCHAR(30),
       email VARCHAR(255),
       origem VARCHAR(50),
+      landing_page_slug VARCHAR(255),
       campaign_id VARCHAR(100),
       platform VARCHAR(20),
       cidade VARCHAR(100),
@@ -82,7 +83,45 @@ async function initTables() {
       consultor_id INT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS atendentes (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      email VARCHAR(255),
+      telefone VARCHAR(30),
+      ativo BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type VARCHAR(20) DEFAULT 'info',
+      read BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS page_visits (
+      id SERIAL PRIMARY KEY,
+      landing_page_slug VARCHAR(255),
+      latitude NUMERIC(10,7),
+      longitude NUMERIC(10,7),
+      cidade VARCHAR(100),
+      estado VARCHAR(5),
+      visited_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
+
+  // Add landing_page_slug column if it doesn't exist (migration for existing DBs)
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'landing_page_slug') THEN
+        ALTER TABLE leads ADD COLUMN landing_page_slug VARCHAR(255);
+      END IF;
+    END $$;
+  `).catch(() => {});
+
   console.log('✅ Database tables initialized');
 }
 
