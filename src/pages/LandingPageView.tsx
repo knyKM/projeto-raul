@@ -8,7 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/apiClient";
 import SimpleLandingPage from "@/components/landing-pages/SimpleLandingPage";
+import DestaqueLandingPage from "@/components/landing-pages/DestaqueLandingPage";
 import ExitPopup from "@/components/landing-pages/ExitPopup";
+import ChatWidget from "@/components/landing-pages/ChatWidget";
 
 const benefits = [
   { icon: Shield, title: "100% Seguro", desc: "Regulamentado pelo Banco Central" },
