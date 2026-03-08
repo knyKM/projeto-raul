@@ -164,7 +164,7 @@ const ConversationList = ({ conversations, selectedId, onSelect, loading }: Prop
                     <span className="text-[9px] font-body font-bold text-secondary-foreground">{conv.unread}</span>
                   </div>
                 )}
-              </button>
+              </motion.button>
             );
           })
         )}

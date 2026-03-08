@@ -248,9 +248,21 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
             )}
           </form>
         </div>
-      </div>
+      </motion.div>
 
-      {showSidebar && <LeadSidebar conversation={conversation} onShowQr={() => setShowQr(true)} />}
+      <AnimatePresence>
+        {showSidebar && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 280, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden shrink-0 hidden lg:block"
+          >
+            <LeadSidebar conversation={conversation} onShowQr={() => setShowQr(true)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <QrCodeDialog open={showQr} onOpenChange={setShowQr} conversation={conversation} />
     </>
   );
