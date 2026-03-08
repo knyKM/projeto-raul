@@ -7,13 +7,27 @@ Documentação dos recursos disponíveis na plataforma, focada em **atendimento,
 ## 🎯 Captação de Leads
 
 ### Landing Pages Dinâmicas
-- **Dois modelos disponíveis:**
-  - **Completa** — Hero com CTA, simulador de parcelas, seção de benefícios e formulário de captura
+- **Três modelos disponíveis:**
+  - **Completa** — Hero com CTA, simulador de parcelas, seção de benefícios, formulário de captura, chat widget e pop-up de saída
   - **Simples** — Página direta com imagem do veículo, valor e formulário (ideal para tráfego pago)
+  - **Destaque** — Layout split-screen (imagem + formulário lado a lado), lista de features, chat widget integrado
 - Geração automática de rotas via `/lp/:slug`
 - Configuração de marca, modelo, valores de crédito e parcelas
 - WhatsApp integrado como CTA secundário
 - **Indicadores por LP:** visitas, leads captados e taxa de conversão (%) para comparar efetividade entre modelos
+
+### Chat Widget
+- Widget flutuante em todas as landing pages
+- Respostas automáticas para perguntas frequentes (consórcio, parcelas, contemplação, FGTS)
+- Quick replies pré-configuradas
+- Captura de lead inline após 3 interações
+- Leads salvos com origem `chat_widget` para análise de canal
+
+### Pop-up de Saída (Exit Intent)
+- Detecta intenção de saída do visitante (mouse leave no desktop, timeout no mobile)
+- Formulário simplificado com CTA de "condição especial"
+- Leads salvos com origem `exit_popup`
+- Exibe apenas 1x por sessão
 
 ### Rastreamento de Visitas
 - Geolocalização automática (IP + GPS do navegador)
