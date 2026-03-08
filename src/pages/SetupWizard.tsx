@@ -163,6 +163,11 @@ const SetupWizard = () => {
     </div>
   );
 
+  // If setup already completed, redirect to dashboard
+  if (alreadyCompleted) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Header */}
