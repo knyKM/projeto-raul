@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog, BarChart3, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog, BarChart3, MessageSquare, UserCircle } from "lucide-react";
 import defaultLogo from "@/assets/logo-sistemaleads.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
