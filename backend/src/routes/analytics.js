@@ -4,8 +4,12 @@
  */
 const { Router } = require('express');
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+const { requireTier } = require('../middleware/licenseTier');
 
 const router = Router();
+
+// Analytics requires Pro tier
+router.use(requireTier('reports_advanced'));
 
 function getClient() {
   const keyJson = process.env.GA_SERVICE_ACCOUNT_KEY;

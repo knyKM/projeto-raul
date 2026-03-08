@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { pool } = require('../db');
+const { invalidateTierCache } = require('../middleware/licenseTier');
 
 const router = Router();
 
@@ -24,6 +25,8 @@ router.post('/', async (req, res, next) => {
         [key, JSON.stringify(value)]
       );
     }
+    // Invalidate license tier cache if license key was updated
+    if (req.body.licenseKey !== undefined) invalidateTierCache();
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

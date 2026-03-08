@@ -3,8 +3,12 @@
  */
 const { Router } = require('express');
 const { pool } = require('../db');
+const { requireTier } = require('../middleware/licenseTier');
 
 const router = Router();
+
+// Reports require Pro tier
+router.use(requireTier('reports_advanced'));
 
 // GET /reports — full aggregated report data
 router.get('/', async (req, res, next) => {

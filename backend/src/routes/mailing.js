@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const { requireTier } = require('../middleware/licenseTier');
+
+// Mailing export requires Pro tier
+router.use(requireTier('leads_export_mailing'));
 
 // POST /mailing/3cplus — Build CSV from leads and send to 3CPlus API
 router.post('/3cplus', async (req, res) => {
