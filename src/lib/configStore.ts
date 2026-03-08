@@ -139,18 +139,28 @@ export function saveConfig(config: Partial<AppConfig>): AppConfig {
   return updated;
 }
 
-// Load from API and merge into localStorage
+// Load from API and merge into localStorage (local values take priority for critical fields)
 export async function syncConfigFromApi(): Promise<AppConfig> {
   const apiUrl = getApiUrl();
   if (!apiUrl) return getConfig();
 
+  const local = getConfig();
   const res = await loadConfigFromApi();
   if (res.ok && res.data) {
-    const merged = { ...DEFAULT_CONFIG, ...res.data } as AppConfig;
+    // Merge: API data fills gaps, but local critical fields are preserved
+    const merged = {
+      ...DEFAULT_CONFIG,
+      ...res.data,
+      // Always preserve local setup/license state to avoid reset loops
+      setupCompleted: local.setupCompleted || (res.data as Record<string, unknown>).setupCompleted === true,
+      licenseActivated: local.licenseActivated || (res.data as Record<string, unknown>).licenseActivated === true,
+      licenseTier: local.licenseTier !== 'free' ? local.licenseTier : ((res.data as Record<string, unknown>).licenseTier as LicenseTier) || local.licenseTier,
+      licenseKey: local.licenseKey || (res.data as Record<string, unknown>).licenseKey as string || '',
+    } as AppConfig;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     return merged;
   }
-  return getConfig();
+  return local;
 }
 
 export function resetConfig(): void {
