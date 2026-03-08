@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLandingPage, generateSlug, type LandingPageData, type LandingPageTemplate } from "@/lib/landingPages";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Zap, Star } from "lucide-react";
+import { FileText, Zap, Star, Heart } from "lucide-react";
 
 interface Props {
   open: boolean;
