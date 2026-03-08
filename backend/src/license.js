@@ -104,7 +104,7 @@ if (require.main === module) {
       console.log('');
     }
   } else {
-    console.log('Mogibens License Manager\n');
+    console.log('sistemaLeads License Manager\n');
     console.log('Commands:');
     console.log('  node license.js generate <pro|proplus>   Generate a single key');
     console.log('  node license.js validate <KEY>           Validate a key');

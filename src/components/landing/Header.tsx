@@ -21,7 +21,7 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-navy-dark/95 backdrop-blur-md border-b border-gold/[0.06]">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2">
-          <img src={logo} alt="Mogibens Consórcios" className="h-10 w-auto rounded-md" />
+          <img src={logo} alt="sistemaLeads" className="h-10 w-auto rounded-md" />
         </a>
 
         {/* Desktop nav */}

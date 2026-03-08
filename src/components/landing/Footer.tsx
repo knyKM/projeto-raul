@@ -18,7 +18,7 @@ const Footer = () => {
         </div>
         <div className="mt-8 pt-6 border-t border-gold/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm font-body text-gold-light/25">
-            © {new Date().getFullYear()} Mogibens Consórcios. Todos os direitos reservados.
+            © {new Date().getFullYear()} sistemaLeads. Todos os direitos reservados.
           </p>
           <Link
             to="/dashboard"

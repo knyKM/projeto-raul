@@ -445,7 +445,7 @@ const SetupWizard = () => {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbName" className="font-body">Nome do Banco</Label>
-                  <Input id="dbName" placeholder="mogibens_db" value={dbName} onChange={(e) => { setDbName(e.target.value); setDbStatus('idle'); }} />
+                  <Input id="dbName" placeholder="sistemaleads" value={dbName} onChange={(e) => { setDbName(e.target.value); setDbStatus('idle'); }} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbUser" className="font-body">Usuário</Label>

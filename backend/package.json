@@ -1,7 +1,7 @@
 {
-  "name": "mogibens-api",
+  "name": "sistemaleads-api",
   "version": "1.0.0",
-  "description": "Backend API for Mogibens — Meta, Google & TikTok Ads integration",
+  "description": "Backend API for sistemaLeads — Meta, Google & TikTok Ads integration",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
