@@ -1,4 +1,4 @@
-import { QRCodeSVG } from "qrcode.react";
+// QR code via API - no external dependency needed
 import {
   Dialog,
   DialogContent,
