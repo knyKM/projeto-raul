@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock } from "lucide-react";
-import defaultLogo from "@/assets/logo-mogibens.png";
+import defaultLogo from "@/assets/logo-sistemaleads.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";

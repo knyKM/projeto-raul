@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LayoutDashboard } from "lucide-react";
-import logo from "@/assets/logo-mogibens.png";
+import logo from "@/assets/logo-sistemaleads.png";
 
 const Footer = () => {
   return (
