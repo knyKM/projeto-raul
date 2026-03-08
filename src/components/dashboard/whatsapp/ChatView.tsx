@@ -86,7 +86,13 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
 
   return (
     <>
-      <div className="flex-1 flex flex-col min-w-0">
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="flex-1 flex flex-col min-w-0"
+        key={conversation.id}
+      >
         {/* Header */}
         <div className="relative px-5 py-3 bg-card border-b border-border">
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-secondary/30 to-transparent" />
