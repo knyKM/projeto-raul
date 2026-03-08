@@ -34,6 +34,13 @@ type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 const SetupWizard = () => {
   const navigate = useNavigate();
   const existing = getConfig();
+
+  // If setup already completed, redirect to dashboard
+  if (existing.setupCompleted) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
+
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
