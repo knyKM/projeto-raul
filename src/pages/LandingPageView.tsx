@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/lib/apiClient";
 import SimpleLandingPage from "@/components/landing-pages/SimpleLandingPage";
 import DestaqueLandingPage from "@/components/landing-pages/DestaqueLandingPage";
+import ApelativoLandingPage from "@/components/landing-pages/ApelativoLandingPage";
 import ExitPopup from "@/components/landing-pages/ExitPopup";
 import ChatWidget from "@/components/landing-pages/ChatWidget";
 
