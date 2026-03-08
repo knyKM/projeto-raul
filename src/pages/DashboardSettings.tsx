@@ -122,7 +122,7 @@ const DashboardSettings = () => {
       setGoogleStatus({ status: 'success', error: '', syncing: false, accountName: res.data.account?.accountName });
       toast({ title: "Google Ads conectado", description: `Conta: ${res.data.account?.accountName || 'OK'}` });
     } else {
-      setGoogleStatus({ status: 'error', error: res.data?.error || res.error || 'Falha na conexão', syncing: false });
+      setGoogleStatus({ status: 'error', error: res.error || 'Falha na conexão', syncing: false });
     }
   };
 
