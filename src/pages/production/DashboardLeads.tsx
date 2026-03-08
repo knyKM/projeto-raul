@@ -66,6 +66,7 @@ const DashboardLeads = () => {
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
   const [mailingOpen, setMailingOpen] = useState(false);
+  const [remarketingOpen, setRemarketingOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
 
   const fetchData = async () => {
