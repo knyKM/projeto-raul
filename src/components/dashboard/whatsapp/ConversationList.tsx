@@ -100,8 +100,11 @@ const ConversationList = ({ conversations, selectedId, onSelect, loading }: Prop
             const status = statusConfig[conv.status] || statusConfig.pending;
             const isSelected = selectedId === conv.id;
             return (
-              <button
+              <motion.button
                 key={conv.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.03 }}
                 onClick={() => onSelect(conv.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200",
