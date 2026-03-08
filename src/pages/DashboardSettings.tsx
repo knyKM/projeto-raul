@@ -140,7 +140,7 @@ const DashboardSettings = () => {
       setTiktokStatus({ status: 'success', error: '', syncing: false, accountName: res.data.account?.accountName });
       toast({ title: "TikTok Ads conectado", description: `Conta: ${res.data.account?.accountName || 'OK'}` });
     } else {
-      setTiktokStatus({ status: 'error', error: res.data?.error || res.error || 'Falha na conexão', syncing: false });
+      setTiktokStatus({ status: 'error', error: res.error || 'Falha na conexão', syncing: false });
     }
   };
 
