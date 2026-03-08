@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/apiClient";
 import type { LandingPageData } from "@/lib/landingPages";
+import ExitPopup from "./ExitPopup";
 
 interface Props {
   page: LandingPageData;
@@ -133,6 +134,8 @@ const SimpleLandingPage = ({ page, slug }: Props) => {
           © {new Date().getFullYear()} Mogibens · Consórcio de Veículos
         </p>
       </motion.div>
+
+      <ExitPopup vehicleName={page.vehicleName} slug={slug} whatsappUrl={whatsappUrl} />
     </div>
   );
 };

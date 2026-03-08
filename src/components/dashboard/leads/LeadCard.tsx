@@ -121,9 +121,11 @@ const LeadCard = ({ lead, atendentes, statusColors, statusLabels, onStatusChange
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="novo">Pendente</SelectItem>
-                <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
-                <SelectItem value="concluido">Concluído</SelectItem>
+                <SelectItem value="novo">Novo</SelectItem>
+                <SelectItem value="em_contato">Em Contato</SelectItem>
+                <SelectItem value="negociando">Negociando</SelectItem>
+                <SelectItem value="fechado">Fechado</SelectItem>
+                <SelectItem value="perdido">Perdido</SelectItem>
               </SelectContent>
             </Select>
 
