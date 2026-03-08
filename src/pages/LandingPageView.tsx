@@ -312,6 +312,7 @@ const LandingPageView = () => {
 
       {/* Exit Intent Popup */}
       <ExitPopup vehicleName={page.vehicleName} slug={slug!} whatsappUrl={whatsappUrl} />
+      <ChatWidget vehicleName={page.vehicleName} slug={slug!} whatsappNumber={page.whatsappNumber} />
     </div>
   );
 };
