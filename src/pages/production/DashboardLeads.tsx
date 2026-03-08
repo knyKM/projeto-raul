@@ -1,9 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle2, User, Users } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import LockedOverlay from "@/components/dashboard/LockedOverlay";
+import { hasFeature } from "@/lib/featureAccess";
+import { Button } from "@/components/ui/button";
+import { PhoneOutgoing } from "lucide-react";
 
 const DashboardLeads = () => {
+  const canExportMailing = hasFeature('leads_export_mailing');
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -11,6 +16,21 @@ const DashboardLeads = () => {
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">Fila de Leads</h1>
             <p className="text-sm text-muted-foreground font-body mt-1">Gerencie e atribua os leads dos formulários.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {canExportMailing ? (
+              <Button variant="gold" size="sm" className="gap-2 font-body">
+                <PhoneOutgoing className="w-4 h-4" />
+                Montar Mailing
+              </Button>
+            ) : (
+              <LockedOverlay feature="leads_export_mailing">
+                <Button variant="gold" size="sm" className="gap-2 font-body">
+                  <PhoneOutgoing className="w-4 h-4" />
+                  Montar Mailing
+                </Button>
+              </LockedOverlay>
+            )}
           </div>
         </div>
 
