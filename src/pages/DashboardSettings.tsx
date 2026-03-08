@@ -103,7 +103,7 @@ const DashboardSettings = () => {
       setMetaStatus({ status: 'success', error: '', syncing: false, accountName: res.data.account?.accountName });
       toast({ title: "Meta Ads conectado", description: `Conta: ${res.data.account?.accountName || 'OK'}` });
     } else {
-      setMetaStatus({ status: 'error', error: res.data?.error || res.error || 'Falha na conexão', syncing: false });
+      setMetaStatus({ status: 'error', error: res.error || 'Falha na conexão', syncing: false });
     }
   };
 
