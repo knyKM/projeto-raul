@@ -111,6 +111,16 @@ async function initTables() {
       estado VARCHAR(5),
       visited_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'atendente' CHECK (role IN ('atendente', 'supervisor', 'administrador')),
+      ativo BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
   // Add landing_page_slug column if it doesn't exist (migration for existing DBs)
