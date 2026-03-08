@@ -103,7 +103,7 @@ const DashboardLeads = () => {
           </div>
           <div className="flex items-center gap-2">
             {canExportMailing ? (
-              <Button variant="gold" size="sm" className="gap-2 font-body">
+              <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
                 <PhoneOutgoing className="w-4 h-4" />
                 Montar Mailing
               </Button>
