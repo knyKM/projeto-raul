@@ -185,16 +185,16 @@ const DashboardReports = () => {
     to: new Date(),
   });
 
-  const fetchData = async () => {
+  const fetchData = async (from?: Date, to?: Date) => {
     setLoading(true);
-    const startDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
-    const endDate = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+    const startDate = from ? format(from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
+    const endDate = to ? format(to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
     const res = await api.get<ReportData>(`/reports?startDate=${startDate}&endDate=${endDate}`);
     if (res.ok && res.data) setData(res.data);
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, [dateRange]);
+  useEffect(() => { fetchData(dateRange?.from, dateRange?.to); }, []);
 
   const handlePreset = (value: string) => {
     setPreset(value);
