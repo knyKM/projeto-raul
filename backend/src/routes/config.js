@@ -55,4 +55,33 @@ router.post('/validate-license', (req, res) => {
   res.json(result);
 });
 
+// GET /config/tabulations — load tabulations
+router.get('/tabulations', async (_req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT value FROM app_config WHERE key = 'tabulations'"
+    );
+    if (rows.length > 0) {
+      res.json(JSON.parse(rows[0].value));
+    } else {
+      res.json([]);
+    }
+  } catch {
+    res.json([]);
+  }
+});
+
+// POST /config/tabulations — save tabulations
+router.post('/tabulations', async (req, res, next) => {
+  try {
+    const tabulations = req.body;
+    await pool.query(
+      `INSERT INTO app_config (key, value) VALUES ('tabulations', $1)
+       ON CONFLICT (key) DO UPDATE SET value = $1`,
+      [JSON.stringify(tabulations)]
+    );
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
