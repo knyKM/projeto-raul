@@ -36,9 +36,9 @@ async function sendMessage(to, message) {
   return data.messages?.[0]?.id;
 }
 
-// Apply license tier check to all routes EXCEPT webhooks
+// Apply license tier check to all routes EXCEPT webhooks and public chat-widget
 router.use((req, res, next) => {
-  if (req.path === '/webhook') return next();
+  if (req.path === '/webhook' || req.path.startsWith('/chat-widget')) return next();
   return requireTier('whatsapp')(req, res, next);
 });
 
@@ -360,6 +360,96 @@ router.post('/webhook', async (req, res) => {
   }
 
   res.sendStatus(200);
+});
+
+// ─── PUBLIC: Chat Widget → WhatsApp conversation ───
+// This endpoint is PUBLIC (no auth/tier) so landing page visitors can send messages.
+
+// POST /whatsapp/chat-widget/start — Start or resume a chat widget conversation
+router.post('/chat-widget/start', async (req, res) => {
+  const { name, phone, slug, vehicleName } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Telefone obrigatório' });
+
+  const cleanPhone = phone.replace(/\D/g, '');
+  try {
+    // Check for existing open conversation with this phone
+    const { rows: existing } = await pool.query(
+      `SELECT id FROM wa_conversations WHERE phone = $1 AND status NOT IN ('closed', 'resolved') ORDER BY started_at DESC LIMIT 1`,
+      [cleanPhone]
+    );
+
+    if (existing.length > 0) {
+      return res.json({ conversationId: existing[0].id, resumed: true });
+    }
+
+    // Create new conversation
+    const { rows: [conv] } = await pool.query(
+      `INSERT INTO wa_conversations (lead_name, phone, wa_id, interest, status, started_at, last_message_at)
+       VALUES ($1, $2, $3, $4, 'pending', NOW(), NOW())
+       RETURNING id`,
+      [name || 'Visitante', cleanPhone, cleanPhone, vehicleName ? `Chat LP: ${vehicleName}` : `Chat LP: ${slug || 'direto'}`]
+    );
+
+    // Also create the lead if it doesn't exist
+    const { rows: leadExists } = await pool.query(
+      'SELECT id FROM leads WHERE telefone = $1 LIMIT 1', [cleanPhone]
+    );
+    let leadId = leadExists[0]?.id;
+    if (!leadId) {
+      const { rows: [newLead] } = await pool.query(
+        `INSERT INTO leads (nome, telefone, origem, landing_page_slug, status, created_at)
+         VALUES ($1, $2, 'chat_widget', $3, 'novo', NOW()) RETURNING id`,
+        [name || 'Visitante', cleanPhone, slug || null]
+      );
+      leadId = newLead.id;
+    }
+
+    // Link lead to conversation
+    await pool.query('UPDATE wa_conversations SET lead_id = $1 WHERE id = $2', [leadId, conv.id]);
+
+    res.json({ conversationId: conv.id, leadId, resumed: false });
+  } catch (err) {
+    console.error('[ChatWidget] start error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /whatsapp/chat-widget/message — Send a message from chat widget
+router.post('/chat-widget/message', async (req, res) => {
+  const { conversationId, text, role = 'customer' } = req.body;
+  if (!conversationId || !text) return res.status(400).json({ error: 'conversationId e text obrigatórios' });
+
+  try {
+    const { rows: [msg] } = await pool.query(
+      `INSERT INTO wa_messages (conversation_id, role, text, status, timestamp)
+       VALUES ($1, $2, $3, 'delivered', NOW()) RETURNING *`,
+      [conversationId, role, text]
+    );
+
+    // Update conversation last_message and unread count
+    await pool.query(
+      `UPDATE wa_conversations SET last_message = $1, last_message_at = NOW(), unread = unread + 1, status = CASE WHEN status = 'closed' THEN 'pending' ELSE status END WHERE id = $2`,
+      [text, conversationId]
+    );
+
+    res.json(msg);
+  } catch (err) {
+    console.error('[ChatWidget] message error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /whatsapp/chat-widget/messages/:id — Get messages for a conversation (public)
+router.get('/chat-widget/messages/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, role, text, status, timestamp FROM wa_messages WHERE conversation_id = $1 ORDER BY timestamp ASC',
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

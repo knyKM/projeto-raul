@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface ChatWidgetProps {
 
 interface ChatMessage {
   id: string;
-  role: 'user' | 'bot';
+  role: 'user' | 'bot' | 'customer' | 'agent';
   text: string;
 }
 
@@ -40,6 +40,8 @@ function getBotResponse(userMessage: string): string {
   return 'Obrigado pela sua mensagem! Para um atendimento mais completo, deixe seu telefone ou fale diretamente pelo WhatsApp. 😊';
 }
 
+const CONV_KEY = 'chatwidget_conv';
+
 const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -47,13 +49,19 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
   const [typing, setTyping] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [leadForm, setLeadForm] = useState({ name: '', phone: '' });
+  const [conversationId, setConversationId] = useState<number | null>(() => {
+    try { const v = sessionStorage.getItem(CONV_KEY); return v ? parseInt(v) : null; } catch { return null; }
+  });
+  const [showLeadForm, setShowLeadForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no ${vehicleName}.`)}`;
 
+  // Show welcome message on open
   useEffect(() => {
-    if (open && messages.length === 0) {
+    if (open && messages.length === 0 && !conversationId) {
       setMessages([{
         id: '1',
         role: 'bot',
@@ -62,29 +70,83 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
     }
   }, [open, vehicleName]);
 
+  // If we have an existing conversation, load messages
+  useEffect(() => {
+    if (open && conversationId) {
+      loadMessages();
+      setLeadCaptured(true);
+    }
+  }, [open, conversationId]);
+
+  // Poll for new messages (agent replies) every 5s when conversation is active
+  useEffect(() => {
+    if (open && conversationId) {
+      pollRef.current = setInterval(loadMessages, 5000);
+      return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [open, conversationId]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = (text: string) => {
+  const loadMessages = useCallback(async () => {
+    if (!conversationId) return;
+    try {
+      const res = await api.get<Array<{ id: number; role: string; text: string; timestamp: string }>>(`/whatsapp/chat-widget/messages/${conversationId}`);
+      if (res.ok && res.data) {
+        setMessages(res.data.map(m => ({
+          id: String(m.id),
+          role: m.role as ChatMessage['role'],
+          text: m.text,
+        })));
+      }
+    } catch {
+      // silent
+    }
+  }, [conversationId]);
+
+  const sendMessageToBackend = async (text: string) => {
+    if (!conversationId) return;
+    try {
+      await api.post('/whatsapp/chat-widget/message', {
+        conversationId,
+        text,
+        role: 'customer',
+      });
+    } catch {
+      // silent
+    }
+  };
+
+  const sendMessage = async (text: string) => {
     const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
-    setTyping(true);
 
+    if (conversationId) {
+      // Already connected — send directly to backend
+      await sendMessageToBackend(text);
+      return;
+    }
+
+    // Not connected yet — show bot response locally + prompt for lead capture
+    setTyping(true);
     setTimeout(() => {
       const botReply = getBotResponse(text);
       const botMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: 'bot', text: botReply };
       setMessages(prev => [...prev, botMsg]);
       setTyping(false);
 
-      // After 3 messages, prompt for lead capture
+      // After 3 user interactions, prompt for lead capture
       if (!leadCaptured && messages.length >= 3) {
         setTimeout(() => {
+          setShowLeadForm(true);
           setMessages(prev => [...prev, {
             id: (Date.now() + 2).toString(),
             role: 'bot',
-            text: 'Quer que um consultor entre em contato? Deixe seu nome e telefone! 📞',
+            text: 'Quer que um consultor entre em contato? Deixe seu nome e telefone! 📞 Assim posso te conectar com nosso time.',
           }]);
         }, 1000);
       }
@@ -102,24 +164,45 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
     if (!leadForm.name || !leadForm.phone) return;
 
     try {
-      await api.post('/leads', {
-        nome: leadForm.name,
-        telefone: leadForm.phone,
-        email: null,
-        origem: 'chat_widget',
-        landing_page_slug: slug,
+      // Start conversation in the WhatsApp system
+      const res = await api.post<{ conversationId: number; leadId: number; resumed: boolean }>('/whatsapp/chat-widget/start', {
+        name: leadForm.name,
+        phone: leadForm.phone,
+        slug,
+        vehicleName,
       });
-      setLeadCaptured(true);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        role: 'bot',
-        text: `Obrigado, ${leadForm.name}! ✅ Um consultor entrará em contato pelo número ${leadForm.phone} em breve.`,
-      }]);
-      toast({ title: "Dados recebidos!" });
+
+      if (res.ok && res.data) {
+        const convId = res.data.conversationId;
+        setConversationId(convId);
+        sessionStorage.setItem(CONV_KEY, String(convId));
+        setLeadCaptured(true);
+        setShowLeadForm(false);
+
+        // Send all previous user messages to the conversation so the agent has context
+        const userMessages = messages.filter(m => m.role === 'user');
+        for (const msg of userMessages) {
+          await api.post('/whatsapp/chat-widget/message', {
+            conversationId: convId,
+            text: msg.text,
+            role: 'customer',
+          });
+        }
+
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'bot',
+          text: `Obrigado, ${leadForm.name}! ✅ Você está agora conectado com nosso time. Um consultor vai responder aqui mesmo em instantes.`,
+        }]);
+
+        toast({ title: "Conectado ao atendimento!" });
+      }
     } catch {
-      // silent
+      toast({ title: "Erro ao conectar", description: "Tente novamente.", variant: "destructive" });
     }
   };
+
+  const isUserMsg = (role: string) => role === 'user' || role === 'customer';
 
   return (
     <>
@@ -134,7 +217,6 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
             className="fixed bottom-20 right-4 z-[999] w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
           >
             <MessageCircle className="w-6 h-6 text-primary-foreground" />
-            {/* Notification dot */}
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center font-bold">1</span>
           </motion.button>
         )}
@@ -157,7 +239,9 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
                 </div>
                 <div>
                   <p className="text-xs font-display font-semibold text-primary-foreground">Atendimento</p>
-                  <p className="text-[10px] font-body text-gold-light/50">Online agora</p>
+                  <p className="text-[10px] font-body text-gold-light/50">
+                    {conversationId ? '🟢 Conectado ao time' : 'Online agora'}
+                  </p>
                 </div>
               </div>
               <button onClick={() => setOpen(false)} className="text-gold-light/40 hover:text-gold-light/80 transition-colors">
@@ -168,15 +252,25 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[250px] max-h-[320px]">
               {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${isUserMsg(msg.role) ? 'justify-end' : 'justify-start'}`}
+                >
                   <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs font-body leading-relaxed ${
-                    msg.role === 'user'
+                    isUserMsg(msg.role)
                       ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-navy-light/50 text-primary-foreground border border-border/20 rounded-bl-sm'
+                      : msg.role === 'agent'
+                        ? 'bg-emerald-900/40 text-primary-foreground border border-emerald-500/20 rounded-bl-sm'
+                        : 'bg-navy-light/50 text-primary-foreground border border-border/20 rounded-bl-sm'
                   }`}>
+                    {msg.role === 'agent' && (
+                      <span className="text-[9px] text-emerald-400/70 block mb-0.5 font-semibold">Consultor</span>
+                    )}
                     {msg.text}
                   </div>
-                </div>
+                </motion.div>
               ))}
 
               {typing && (
@@ -191,10 +285,15 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
                 </div>
               )}
 
-              {/* Lead capture form inline */}
-              {!leadCaptured && messages.length >= 5 && (
-                <form onSubmit={handleLeadSubmit} className="space-y-2 bg-navy-light/30 rounded-xl p-3 border border-gold/10">
-                  <p className="text-[10px] font-body text-gold-light/60 text-center">Deixe seu contato:</p>
+              {/* Lead capture form */}
+              {(showLeadForm || (!leadCaptured && messages.length >= 5)) && !leadCaptured && (
+                <motion.form
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onSubmit={handleLeadSubmit}
+                  className="space-y-2 bg-navy-light/30 rounded-xl p-3 border border-gold/10"
+                >
+                  <p className="text-[10px] font-body text-gold-light/60 text-center">Conecte-se com nosso time:</p>
                   <Input
                     placeholder="Seu nome"
                     value={leadForm.name}
@@ -207,15 +306,17 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
                     onChange={(e) => setLeadForm(l => ({ ...l, phone: e.target.value }))}
                     className="h-8 text-xs bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
                   />
-                  <Button type="submit" size="sm" className="w-full text-xs h-8">Enviar</Button>
-                </form>
+                  <Button type="submit" size="sm" className="w-full text-xs h-8">
+                    Conectar com consultor
+                  </Button>
+                </motion.form>
               )}
 
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick replies */}
-            {messages.length <= 2 && (
+            {/* Quick replies (only before connected) */}
+            {!conversationId && messages.length <= 2 && (
               <div className="px-3 pb-2 flex flex-wrap gap-1.5">
                 {quickReplies.map((q, i) => (
                   <button
@@ -234,7 +335,7 @@ const ChatWidget = ({ vehicleName, slug, whatsappNumber }: ChatWidgetProps) => {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Digite sua dúvida..."
+                placeholder={conversationId ? "Mensagem para o consultor..." : "Digite sua dúvida..."}
                 className="flex-1 h-8 text-xs bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
               />
               <Button type="submit" size="sm" className="h-8 w-8 p-0 shrink-0" disabled={!input.trim()}>
