@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing } from "lucide-react";
+import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing, LayoutList, Columns3 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { hasFeature } from "@/lib/featureAccess";
@@ -9,6 +9,7 @@ import { api } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import MailingDialog from "@/components/dashboard/leads/MailingDialog";
 import LeadCard from "@/components/dashboard/leads/LeadCard";
+import KanbanBoard from "@/components/dashboard/leads/KanbanBoard";
 
 interface Lead {
   id: number;
@@ -36,15 +37,25 @@ interface Atendente {
 
 const statusColors: Record<string, string> = {
   novo: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30",
+  em_contato: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30",
   em_atendimento: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30",
+  negociando: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30",
+  fechado: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
   concluido: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
+  perdido: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30",
 };
 
 const statusLabels: Record<string, string> = {
-  novo: "Pendente",
+  novo: "Novo",
+  em_contato: "Em Contato",
   em_atendimento: "Em Atendimento",
+  negociando: "Negociando",
+  fechado: "Fechado",
   concluido: "Concluído",
+  perdido: "Perdido",
 };
+
+type ViewMode = 'list' | 'kanban';
 
 const DashboardLeads = () => {
   const canExportMailing = hasFeature('leads_export_mailing');
@@ -54,6 +65,7 @@ const DashboardLeads = () => {
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
   const [mailingOpen, setMailingOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
 
   const fetchData = async () => {
     setLoading(true);
@@ -71,9 +83,10 @@ const DashboardLeads = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleStatusChange = async (leadId: number, newStatus: string) => {
+    // Optimistic update
+    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, status: newStatus } : l));
     const res = await api.put(`/leads/${leadId}`, { status: newStatus });
     if (res.ok) {
-      setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, status: newStatus } : l));
       fetchData();
     }
   };
@@ -81,7 +94,7 @@ const DashboardLeads = () => {
   const handleAssign = async (leadId: number, consultorId: string) => {
     const res = await api.put(`/leads/${leadId}`, {
       consultor_id: consultorId ? parseInt(consultorId) : null,
-      status: consultorId ? 'em_atendimento' : 'novo',
+      status: consultorId ? 'em_contato' : 'novo',
     });
     if (res.ok) fetchData();
   };
@@ -95,6 +108,24 @@ const DashboardLeads = () => {
             <p className="text-sm text-muted-foreground font-body mt-1">Gerencie e atribua os leads dos formulários.</p>
           </div>
           <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Visualização em lista"
+              >
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Visualização Kanban"
+              >
+                <Columns3 className="w-4 h-4" />
+              </button>
+            </div>
+
             {canExportMailing ? (
               <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
                 <PhoneOutgoing className="w-4 h-4" />
@@ -124,7 +155,7 @@ const DashboardLeads = () => {
           </div>
         </div>
 
-        {/* Leads list */}
+        {/* Content */}
         {loading ? (
           <Card>
             <CardContent className="flex items-center justify-center py-16">
@@ -141,6 +172,8 @@ const DashboardLeads = () => {
               </p>
             </CardContent>
           </Card>
+        ) : viewMode === 'kanban' ? (
+          <KanbanBoard leads={leads} onStatusChange={handleStatusChange} />
         ) : (
           <div className="space-y-2">
             {leads.map((lead) => (
