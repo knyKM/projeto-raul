@@ -1,20 +1,21 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock } from "lucide-react";
 import defaultLogo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import { getConfig } from "@/lib/configStore";
+import { hasFeature, type Feature } from "@/lib/featureAccess";
 
-const navItems = [
-  { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
-  { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList },
-  { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone },
-  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText },
-  { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin },
-  { href: "/dashboard/atendentes", label: "Atendentes", icon: Users },
-  { href: "/dashboard/settings", label: "Configurações", icon: Settings },
+const navItems: { href: string; label: string; icon: typeof LayoutDashboard; feature?: Feature }[] = [
+  { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, feature: "dashboard_basic" },
+  { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList, feature: "leads_basic" },
+  { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone, feature: "ads_central" },
+  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single" },
+  { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin, feature: "geo" },
+  { href: "/dashboard/atendentes", label: "Atendentes", icon: Users, feature: "atendentes" },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings" },
 ];
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
@@ -36,11 +37,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <div className="p-4 border-b border-border">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
-              {config.companyLogoUrl ? (
-                <img src={logoSrc} alt={companyName} className="w-full h-full object-contain" />
-              ) : (
-                <img src={defaultLogo} alt="Mogibens" className="w-full h-full object-contain" />
-              )}
+              <img src={logoSrc} alt={companyName} className="w-full h-full object-contain" />
             </div>
             <div>
               <p className="font-display text-sm font-semibold text-foreground truncate max-w-[160px]">{companyName}</p>
@@ -52,6 +49,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
+            const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
               <Link
                 key={item.href}
@@ -60,11 +58,14 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors",
                   isActive
                     ? "bg-primary text-primary-foreground font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : isLocked
+                      ? "text-muted-foreground/50 hover:bg-muted/50"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <item.icon className="w-4 h-4" />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {isLocked && <Lock className="w-3 h-3 text-muted-foreground/40" />}
               </Link>
             );
           })}
@@ -105,6 +106,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <nav className="md:hidden flex items-center gap-1 px-4 py-2 bg-card border-b border-border overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
+            const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
               <Link
                 key={item.href}
@@ -113,11 +115,14 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-body whitespace-nowrap transition-colors",
                   isActive
                     ? "bg-primary text-primary-foreground font-medium"
-                    : "text-muted-foreground hover:bg-muted"
+                    : isLocked
+                      ? "text-muted-foreground/50"
+                      : "text-muted-foreground hover:bg-muted"
                 )}
               >
                 <item.icon className="w-3.5 h-3.5" />
                 {item.label}
+                {isLocked && <Lock className="w-2.5 h-2.5" />}
               </Link>
             );
           })}
