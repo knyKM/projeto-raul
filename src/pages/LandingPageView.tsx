@@ -25,39 +25,60 @@ const LandingPageView = () => {
   useEffect(() => {
     if (!slug) return;
 
-    const trackVisit = async (lat?: number, lng?: number) => {
-      try {
-        // Try reverse geocoding with a free API
-        let cidade = undefined;
-        let estado = undefined;
-        if (lat && lng) {
-          try {
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`);
-            const geoData = await geoRes.json();
-            cidade = geoData?.address?.city || geoData?.address?.town || geoData?.address?.municipality;
-            estado = geoData?.address?.state_code?.toUpperCase() || geoData?.address?.state?.substring(0, 2).toUpperCase();
-          } catch { /* ignore geo errors */ }
-        }
+    const trackVisit = async () => {
+      let cidade: string | undefined;
+      let estado: string | undefined;
+      let latitude: number | undefined;
+      let longitude: number | undefined;
 
+      try {
+        // 1. Try IP-based geolocation first (no permission needed, always works)
+        const ipRes = await fetch('https://ipapi.co/json/');
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          cidade = ipData.city || undefined;
+          estado = ipData.region_code || ipData.region?.substring(0, 2)?.toUpperCase() || undefined;
+          latitude = ipData.latitude || undefined;
+          longitude = ipData.longitude || undefined;
+        }
+      } catch { /* silent */ }
+
+      // 2. Try browser geolocation for more precision (user may deny)
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          latitude = pos.coords.latitude;
+          longitude = pos.coords.longitude;
+
+          // Reverse geocode with precise coords
+          try {
+            const geoRes = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`,
+              { headers: { 'User-Agent': 'SistemaLeads/1.0' } }
+            );
+            if (geoRes.ok) {
+              const geoData = await geoRes.json();
+              cidade = geoData?.address?.city || geoData?.address?.town || geoData?.address?.municipality || cidade;
+              estado = geoData?.address?.state_code?.toUpperCase() || geoData?.address?.state?.substring(0, 2)?.toUpperCase() || estado;
+            }
+          } catch { /* keep IP-based data */ }
+        } catch { /* denied or timeout - keep IP-based data */ }
+      }
+
+      try {
         await api.post('/leads/track-visit', {
           landing_page_slug: slug,
-          latitude: lat || null,
-          longitude: lng || null,
+          latitude: latitude || null,
+          longitude: longitude || null,
           cidade: cidade || null,
           estado: estado || null,
         });
       } catch { /* silent */ }
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => trackVisit(pos.coords.latitude, pos.coords.longitude),
-        () => trackVisit(), // denied - track without geo
-        { timeout: 5000 }
-      );
-    } else {
-      trackVisit();
-    }
+    trackVisit();
   }, [slug]);
 
   if (!page) {
