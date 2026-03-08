@@ -438,6 +438,7 @@ const ApelativoLandingPage = ({ page, slug, trackFormStart, trackChatMessage }: 
               placeholder="Seu nome completo"
               value={lead.name}
               onChange={(e) => setLead(l => ({ ...l, name: e.target.value }))}
+              onFocus={trackFormStart}
               className="h-12 bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30 rounded-xl"
               maxLength={100}
             />

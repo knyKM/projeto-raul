@@ -94,6 +94,7 @@ const SimpleLandingPage = ({ page, slug, trackFormStart, trackChatMessage }: Pro
             placeholder="Seu nome"
             value={lead.name}
             onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))}
+            onFocus={trackFormStart}
             className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
             maxLength={100}
           />
