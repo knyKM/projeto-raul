@@ -185,22 +185,29 @@ const DashboardReports = () => {
     to: new Date(),
   });
 
-  const fetchData = async () => {
+  const fetchData = async (from?: Date, to?: Date) => {
     setLoading(true);
-    const startDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
-    const endDate = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+    const startDate = from ? format(from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
+    const endDate = to ? format(to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
     const res = await api.get<ReportData>(`/reports?startDate=${startDate}&endDate=${endDate}`);
     if (res.ok && res.data) setData(res.data);
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, [dateRange]);
+  useEffect(() => { fetchData(dateRange?.from, dateRange?.to); }, []);
+
+  const handleRefresh = () => fetchData(dateRange?.from, dateRange?.to);
 
   const handlePreset = (value: string) => {
     setPreset(value);
-    if (value === '7d') setDateRange({ from: subDays(new Date(), 7), to: new Date() });
-    else if (value === '30d') setDateRange({ from: subDays(new Date(), 30), to: new Date() });
-    else if (value === '90d') setDateRange({ from: subDays(new Date(), 90), to: new Date() });
+    let from: Date | undefined, to: Date | undefined;
+    if (value === '7d') { from = subDays(new Date(), 7); to = new Date(); }
+    else if (value === '30d') { from = subDays(new Date(), 30); to = new Date(); }
+    else if (value === '90d') { from = subDays(new Date(), 90); to = new Date(); }
+    if (from && to) {
+      setDateRange({ from, to });
+      fetchData(from, to);
+    }
   };
 
   const formattedTrend = useMemo(() => {
@@ -230,7 +237,7 @@ const DashboardReports = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">Central de Relatórios</h1>
             <p className="text-sm text-muted-foreground font-body mt-1">Análises e insights dos seus leads</p>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 font-body" onClick={fetchData} disabled={loading}>
+          <Button variant="outline" size="sm" className="gap-2 font-body" onClick={handleRefresh} disabled={loading}>
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
@@ -267,7 +274,10 @@ const DashboardReports = () => {
                     <Calendar
                       mode="range"
                       selected={dateRange}
-                      onSelect={setDateRange}
+                      onSelect={(range) => {
+                        setDateRange(range);
+                        if (range?.from && range?.to) fetchData(range.from, range.to);
+                      }}
                       numberOfMonths={2}
                       locale={ptBR}
                     />
