@@ -47,16 +47,12 @@ router.post('/test-db', async (req, res) => {
   }
 });
 
-// POST /config/validate-license
+// POST /config/validate-license — HMAC-based validation
 router.post('/validate-license', (req, res) => {
+  const { validateLicenseKey } = require('../license');
   const { key } = req.body;
-  // Simple validation — replace with real license server logic
-  if (!key || key.length < 8) {
-    return res.json({ valid: false, tier: 'free' });
-  }
-  const tierMap = { 'PRO-': 'pro', 'PROPLUS-': 'proplus' };
-  const tier = Object.entries(tierMap).find(([prefix]) => key.startsWith(prefix));
-  res.json({ valid: true, tier: tier ? tier[1] : 'pro' });
+  const result = validateLicenseKey(key);
+  res.json(result);
 });
 
 module.exports = router;
