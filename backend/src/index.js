@@ -40,6 +40,7 @@ app.use('/notifications', notificationsRouter);
 app.use('/overview', overviewRouter);
 app.use('/auth', authRouter);
 app.use('/mailing', mailingRouter);
+app.use('/reports', reportsRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
