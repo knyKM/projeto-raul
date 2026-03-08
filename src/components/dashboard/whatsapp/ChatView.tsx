@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Send, Smile, Image, Mic, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Smile, Paperclip, Mic, QrCode, PanelRightClose, PanelRightOpen, Bot, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import LeadSidebar from "./LeadSidebar";
@@ -19,10 +18,20 @@ function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-const statusBadge: Record<string, { label: string; className: string }> = {
-  active: { label: "Ativo", className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20" },
-  pending: { label: "Pendente", className: "bg-amber-500/15 text-amber-600 border-amber-500/20" },
-  expired: { label: "Expirado", className: "bg-muted text-muted-foreground border-border" },
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) return "Hoje";
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+}
+
+const statusStyles: Record<string, { bg: string; text: string; label: string }> = {
+  active: { bg: "bg-secondary/10", text: "text-secondary", label: "Ativo" },
+  pending: { bg: "bg-amber-500/10", text: "text-amber-600", label: "Aguardando" },
+  expired: { bg: "bg-muted", text: "text-muted-foreground", label: "Expirado" },
 };
 
 const ChatView = ({ conversation, messages, onSendMessage, onClose }: Props) => {
@@ -30,6 +39,7 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose }: Props) => 
   const [showSidebar, setShowSidebar] = useState(true);
   const [showQr, setShowQr] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,144 +50,190 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose }: Props) => 
     if (!input.trim()) return;
     onSendMessage(input.trim());
     setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
   };
 
-  const badge = statusBadge[conversation.status];
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  };
+
+  const status = statusStyles[conversation.status];
+
+  // Group messages by date
+  const groupedMessages: { date: string; msgs: WaMessage[] }[] = [];
+  messages.forEach((msg) => {
+    const dateKey = new Date(msg.timestamp).toDateString();
+    const last = groupedMessages[groupedMessages.length - 1];
+    if (last && last.date === dateKey) {
+      last.msgs.push(msg);
+    } else {
+      groupedMessages.push({ date: dateKey, msgs: [msg] });
+    }
+  });
 
   return (
     <>
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-          <div className="flex items-center gap-3">
-            <button onClick={onClose} className="md:hidden text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center text-xs font-display font-bold text-emerald-600">
-              {conversation.leadName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-body font-semibold text-sm text-foreground">
-                  {conversation.leadName}
+        {/* Header — clean with golden accent line */}
+        <div className="relative px-5 py-3 bg-card border-b border-border">
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-secondary/30 to-transparent" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={onClose} className="md:hidden text-muted-foreground hover:text-foreground transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
+                <span className="text-xs font-display font-bold text-secondary">
+                  {conversation.leadName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
-                <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 font-body", badge.className)}>
-                  {badge.label}
-                </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground font-body flex items-center gap-1">
-                📞 {conversation.phone}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-semibold text-sm text-foreground">{conversation.leadName}</span>
+                  <span className={cn("text-[9px] font-body font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md", status.bg, status.text)}>
+                    {status.label}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground font-body mt-0.5">{conversation.phone}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-body h-8"
-              onClick={() => setShowQr(true)}
-            >
-              QR Code
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-body h-8"
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
-              {showSidebar ? "Fechar" : "Detalhes"}
-            </Button>
+            <div className="flex items-center gap-1.5">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-secondary" onClick={() => setShowQr(true)}>
+                <QrCode className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground" onClick={() => setShowSidebar(!showSidebar)}>
+                {showSidebar ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/20">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={cn("flex", msg.role === "user" ? "justify-start" : "justify-end")}
-            >
-              <div
-                className={cn(
-                  "max-w-[65%] rounded-2xl px-4 py-2.5 text-sm font-body relative group",
-                  msg.role === "user"
-                    ? "bg-card border border-border text-foreground rounded-bl-sm"
-                    : msg.role === "bot"
-                    ? "bg-secondary/15 border border-secondary/20 text-foreground rounded-br-sm"
-                    : "bg-primary text-primary-foreground rounded-br-sm"
-                )}
-              >
-                {/* Role label for bot messages */}
-                {msg.role === "bot" && (
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className="text-[10px] font-body font-medium text-secondary">🤖 Bot</span>
-                  </div>
-                )}
-                {msg.role === "agent" && (
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className="text-[10px] font-body font-medium text-primary-foreground/70">👤 Agente</span>
-                  </div>
-                )}
-
-                <p className="leading-relaxed">{msg.text}</p>
-
-                {/* Quick reply buttons */}
-                {msg.buttons && msg.buttons.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/30">
-                    {msg.buttons.map((btn, i) => (
-                      <span
-                        key={i}
-                        className="text-xs px-2.5 py-1 rounded-full border border-secondary/30 text-secondary font-body cursor-pointer hover:bg-secondary/10 transition-colors"
-                      >
-                        {btn}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Timestamp + status */}
-                <div className="flex items-center justify-end gap-1 mt-1">
-                  <span className="text-[10px] opacity-50">{formatTime(msg.timestamp)}</span>
-                  {msg.status === "read" && <span className="text-[10px] text-blue-400">✓✓</span>}
-                  {msg.status === "delivered" && <span className="text-[10px] opacity-50">✓✓</span>}
-                  {msg.status === "sent" && <span className="text-[10px] opacity-50">✓</span>}
-                </div>
+        {/* Messages — custom chat background pattern */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-1" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--border)) 0.5px, transparent 0)`,
+          backgroundSize: "24px 24px",
+        }}>
+          {groupedMessages.map((group) => (
+            <div key={group.date}>
+              {/* Date separator */}
+              <div className="flex items-center justify-center my-4">
+                <span className="text-[10px] font-body font-medium text-muted-foreground bg-card/90 backdrop-blur-sm px-3 py-1 rounded-full border border-border/50 shadow-sm">
+                  {formatDateLabel(group.msgs[0].timestamp)}
+                </span>
               </div>
+
+              {group.msgs.map((msg) => (
+                <div key={msg.id} className={cn("flex mb-2", msg.role === "user" ? "justify-start" : "justify-end")}>
+                  <div className={cn("max-w-[60%] relative", msg.role === "user" ? "pr-4" : "pl-4")}>
+                    {/* Message bubble */}
+                    <div className={cn(
+                      "rounded-2xl px-4 py-2.5 text-[13px] font-body leading-relaxed shadow-sm",
+                      msg.role === "user"
+                        ? "bg-card border border-border text-foreground rounded-tl-sm"
+                        : msg.role === "bot"
+                        ? "bg-gradient-to-br from-secondary/12 to-secondary/6 border border-secondary/15 text-foreground rounded-tr-sm"
+                        : "bg-primary text-primary-foreground rounded-tr-sm shadow-md"
+                    )}>
+                      {/* Sender tag */}
+                      {msg.role === "bot" && (
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Bot className="w-3 h-3 text-secondary" />
+                          <span className="text-[9px] font-body font-bold uppercase tracking-widest text-secondary">Bot</span>
+                        </div>
+                      )}
+                      {msg.role === "agent" && (
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <UserCircle className="w-3 h-3 text-primary-foreground/60" />
+                          <span className="text-[9px] font-body font-bold uppercase tracking-widest text-primary-foreground/60">Você</span>
+                        </div>
+                      )}
+
+                      <p>{msg.text}</p>
+
+                      {/* Interactive buttons */}
+                      {msg.buttons && msg.buttons.length > 0 && (
+                        <div className="flex flex-col gap-1 mt-2.5 pt-2 border-t border-secondary/15">
+                          {msg.buttons.map((btn, i) => (
+                            <button
+                              key={i}
+                              className="text-[11px] px-3 py-1.5 rounded-lg border border-secondary/20 text-secondary font-body font-medium hover:bg-secondary/8 transition-colors text-center"
+                            >
+                              {btn}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Timestamp row */}
+                      <div className="flex items-center justify-end gap-1.5 mt-1.5 -mb-0.5">
+                        <span className={cn(
+                          "text-[9px] tabular-nums",
+                          msg.role === "agent" ? "text-primary-foreground/40" : "text-muted-foreground/50"
+                        )}>
+                          {formatTime(msg.timestamp)}
+                        </span>
+                        {msg.role !== "user" && (
+                          <span className={cn("text-[9px]", msg.status === "read" ? "text-secondary" : msg.role === "agent" ? "text-primary-foreground/30" : "text-muted-foreground/30")}>
+                            {msg.status === "read" ? "✓✓" : msg.status === "delivered" ? "✓✓" : "✓"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
           <div ref={endRef} />
         </div>
 
-        {/* Input bar */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center gap-2 px-4 py-3 border-t border-border bg-card"
-        >
-          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
-            <Image className="w-5 h-5" />
-          </button>
-          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
-            <Smile className="w-5 h-5" />
-          </button>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Digite sua mensagem..."
-            className="flex-1 h-10 bg-muted/50 border-border font-body text-sm"
-            disabled={conversation.status === "expired"}
-          />
-          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
-            <Mic className="w-5 h-5" />
-          </button>
-          <Button
-            type="submit"
-            size="icon"
-            className="h-10 w-10 rounded-full shrink-0"
-            disabled={!input.trim() || conversation.status === "expired"}
+        {/* Input area — elevated with golden glow */}
+        <div className="px-4 py-3 bg-card border-t border-border">
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-end gap-2 bg-muted/30 rounded-2xl px-3 py-2 border border-border/50 focus-within:border-secondary/30 focus-within:shadow-[0_0_0_3px_hsl(var(--secondary)/0.08)] transition-all duration-200"
           >
-            <Send className="w-4 h-4" />
-          </Button>
-        </form>
+            <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground transition-colors p-1 shrink-0 self-end mb-0.5">
+              <Paperclip className="w-4.5 h-4.5" />
+            </button>
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder={conversation.status === "expired" ? "Janela expirada — reenvie template" : "Escreva uma mensagem..."}
+              disabled={conversation.status === "expired"}
+              rows={1}
+              className="flex-1 bg-transparent border-0 outline-none resize-none text-sm font-body text-foreground placeholder:text-muted-foreground/40 py-1 max-h-[120px] disabled:opacity-40"
+            />
+            <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground transition-colors p-1 shrink-0 self-end mb-0.5">
+              <Smile className="w-4.5 h-4.5" />
+            </button>
+            {input.trim() ? (
+              <Button
+                type="submit"
+                size="icon"
+                className="h-9 w-9 rounded-xl bg-secondary hover:bg-secondary/90 text-secondary-foreground shrink-0 shadow-sm"
+                disabled={conversation.status === "expired"}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            ) : (
+              <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground transition-colors p-1 shrink-0 self-end mb-0.5">
+                <Mic className="w-4.5 h-4.5" />
+              </button>
+            )}
+          </form>
+        </div>
       </div>
 
       {/* Lead sidebar */}
@@ -186,11 +242,7 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose }: Props) => 
       )}
 
       {/* QR Code dialog */}
-      <QrCodeDialog
-        open={showQr}
-        onOpenChange={setShowQr}
-        conversation={conversation}
-      />
+      <QrCodeDialog open={showQr} onOpenChange={setShowQr} conversation={conversation} />
     </>
   );
 };
