@@ -196,11 +196,18 @@ const DashboardReports = () => {
 
   useEffect(() => { fetchData(dateRange?.from, dateRange?.to); }, []);
 
+  const handleRefresh = () => fetchData(dateRange?.from, dateRange?.to);
+
   const handlePreset = (value: string) => {
     setPreset(value);
-    if (value === '7d') setDateRange({ from: subDays(new Date(), 7), to: new Date() });
-    else if (value === '30d') setDateRange({ from: subDays(new Date(), 30), to: new Date() });
-    else if (value === '90d') setDateRange({ from: subDays(new Date(), 90), to: new Date() });
+    let from: Date | undefined, to: Date | undefined;
+    if (value === '7d') { from = subDays(new Date(), 7); to = new Date(); }
+    else if (value === '30d') { from = subDays(new Date(), 30); to = new Date(); }
+    else if (value === '90d') { from = subDays(new Date(), 90); to = new Date(); }
+    if (from && to) {
+      setDateRange({ from, to });
+      fetchData(from, to);
+    }
   };
 
   const formattedTrend = useMemo(() => {
