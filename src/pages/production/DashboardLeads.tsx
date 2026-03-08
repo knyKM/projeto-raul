@@ -192,14 +192,14 @@ const DashboardLeads = () => {
                       </Select>
 
                       <Select
-                        value={lead.consultor_id?.toString() || ""}
-                        onValueChange={(v) => handleAssign(lead.id, v)}
+                        value={lead.consultor_id?.toString() || "none"}
+                        onValueChange={(v) => handleAssign(lead.id, v === "none" ? "" : v)}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs font-body">
                           <SelectValue placeholder="Atribuir..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sem atendente</SelectItem>
+                          <SelectItem value="none">Sem atendente</SelectItem>
                           {atendentes.map((a) => (
                             <SelectItem key={a.id} value={a.id.toString()}>{a.nome}</SelectItem>
                           ))}
