@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/apiClient";
+import { useLandingPageTracking } from "@/hooks/useLandingPageTracking";
 import SimpleLandingPage from "@/components/landing-pages/SimpleLandingPage";
 import DestaqueLandingPage from "@/components/landing-pages/DestaqueLandingPage";
 import ApelativoLandingPage from "@/components/landing-pages/ApelativoLandingPage";
