@@ -13,7 +13,7 @@ import {
 import { saveConfig, LicenseTier, TIER_FEATURES, getConfig } from "@/lib/configStore";
 import { setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/logo-mogibens.png";
+import logo from "@/assets/logo-sistemaleads.png";
 
 const steps = [
   { id: 1, title: "Empresa", icon: Building2 },
