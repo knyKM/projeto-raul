@@ -1,4 +1,4 @@
-# Mogibens — Plataforma de Gestão de Leads e Ads
+# sistemaLeads — Plataforma de Gestão de Leads e Ads
 
 Sistema completo para gestão de leads, campanhas de anúncios (Meta, Google, TikTok) e landing pages dinâmicas.
 
@@ -101,16 +101,16 @@ sudo -u postgres psql
 Dentro do `psql`:
 
 ```sql
-CREATE DATABASE mogibens;
-CREATE USER mogibens_user WITH ENCRYPTED PASSWORD 'SUA_SENHA_SEGURA_AQUI';
-GRANT ALL PRIVILEGES ON DATABASE mogibens TO mogibens_user;
+CREATE DATABASE sistemaleads;
+CREATE USER sistemaleads_user WITH ENCRYPTED PASSWORD 'SUA_SENHA_SEGURA_AQUI';
+GRANT ALL PRIVILEGES ON DATABASE sistemaleads TO sistemaleads_user;
 \q
 ```
 
 ### 3. Testar conexão
 
 ```bash
-psql -h localhost -U mogibens_user -d mogibens
+psql -h localhost -U sistemaleads_user -d sistemaleads
 # Digite a senha quando solicitado
 # Se conectou, digite \q para sair
 ```
@@ -135,9 +135,9 @@ psql -h localhost -U mogibens_user -d mogibens
 
 ```bash
 cd /var/www
-sudo git clone https://github.com/seu-usuario/mogibens.git
-sudo chown -R $USER:$USER /var/www/mogibens
-cd /var/www/mogibens
+sudo git clone https://github.com/seu-usuario/sistemaleads.git
+sudo chown -R $USER:$USER /var/www/sistemaleads
+cd /var/www/sistemaleads
 ```
 
 ### 2. Configurar variáveis de ambiente
@@ -159,8 +159,8 @@ CORS_ORIGIN=https://seudominio.com
 # ─── PostgreSQL ──────────────────────────────────────
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=mogibens
-DB_USER=mogibens_user
+DB_NAME=sistemaleads
+DB_USER=sistemaleads_user
 DB_PASSWORD=SUA_SENHA_SEGURA_AQUI
 DB_SSL=false
 
@@ -182,12 +182,12 @@ npm install
 node src/index.js
 ```
 
-Se aparecer `🚀 Mogibens API running on port 3001` e `✅ Database connected`, está funcionando. Pressione `Ctrl+C` para parar.
+Se aparecer `🚀 sistemaLeads API running on port 3001` e `✅ Database connected`, está funcionando. Pressione `Ctrl+C` para parar.
 
 ### 5. Configurar com PM2 (produção)
 
 ```bash
-pm2 start src/index.js --name mogibens-api
+pm2 start src/index.js --name sistemaleads-api
 pm2 save
 pm2 startup
 ```
@@ -214,11 +214,11 @@ Resposta esperada:
 ### Comandos úteis do PM2
 
 ```bash
-pm2 logs mogibens-api     # Ver logs em tempo real
-pm2 restart mogibens-api  # Reiniciar
-pm2 stop mogibens-api     # Parar
-pm2 delete mogibens-api   # Remover
-pm2 monit                 # Monitor interativo
+pm2 logs sistemaleads-api     # Ver logs em tempo real
+pm2 restart sistemaleads-api  # Reiniciar
+pm2 stop sistemaleads-api     # Parar
+pm2 delete sistemaleads-api   # Remover
+pm2 monit                     # Monitor interativo
 ```
 
 ---
@@ -228,7 +228,7 @@ pm2 monit                 # Monitor interativo
 ### 1. Build de produção
 
 ```bash
-cd /var/www/mogibens   # raiz do projeto
+cd /var/www/sistemaleads   # raiz do projeto
 npm install
 npm run build
 ```
@@ -251,7 +251,7 @@ sudo cp -r dist/* /var/www/html/projeto-raul/
 ### 1. Criar o arquivo de configuração
 
 ```bash
-sudo nano /etc/nginx/sites-available/mogibens
+sudo nano /etc/nginx/sites-available/sistemaleads
 ```
 
 Cole o conteúdo:
@@ -296,9 +296,9 @@ server {
 ### 2. Ativar o site
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/mogibens /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default   # remover site padrão
-sudo nginx -t                                  # testar configuração
+sudo ln -s /etc/nginx/sites-available/sistemaleads /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
 sudo systemctl reload nginx
 ```
 
@@ -322,11 +322,7 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d seudominio.com -d www.seudominio.com
 ```
 
-Siga as instruções (informe e-mail, aceite termos, escolha redirecionar HTTP→HTTPS).
-
 ### 3. Renovação automática
-
-O Certbot configura um timer automático. Para verificar:
 
 ```bash
 sudo certbot renew --dry-run
@@ -334,23 +330,19 @@ sudo certbot renew --dry-run
 
 ### 4. Atualizar CORS do backend
 
-Após ativar HTTPS, atualize o `backend/.env`:
-
 ```env
 CORS_ORIGIN=https://seudominio.com
 ```
 
-E reinicie:
-
 ```bash
-pm2 restart mogibens-api
+pm2 restart sistemaleads-api
 ```
 
 ---
 
 ## 🔑 Sistema de Licenças (HMAC)
 
-O sistema usa **HMAC-SHA256** para gerar e validar chaves de licença. As chaves não podem ser falsificadas sem o `LICENSE_SECRET` configurado no `.env`.
+O sistema usa **HMAC-SHA256** para gerar e validar chaves de licença.
 
 ### Formato das chaves
 
@@ -365,17 +357,11 @@ Exemplos:
 ### Gerar chaves
 
 ```bash
-cd /var/www/mogibens/backend
+cd /var/www/sistemaleads/backend
 
-# Chave individual
 node src/license.js generate pro
 node src/license.js generate proplus
-
-# Lote de chaves (5 de cada tier)
 node src/license.js batch 5
-
-# Lote personalizado (10 de cada)
-node src/license.js batch 10
 ```
 
 ### Validar uma chave
@@ -386,18 +372,15 @@ node src/license.js validate PRO-A3F8B2C1-7d2f9a1b3c4e
 
 ### Segurança
 
-- O `LICENSE_SECRET` no `.env` é o segredo que assina as chaves
+- O `LICENSE_SECRET` no `.env` assina as chaves
 - **Se mudar o secret, todas as chaves anteriores ficam inválidas**
-- Guarde o secret em local seguro
 - Gere um secret forte: `openssl rand -hex 32`
 
 ---
 
 ## 🔗 Integrações
 
-Após o deploy, configure as integrações em **Dashboard → Configurações → Integrações** ou diretamente no `backend/.env`.
-
-### Variáveis de ambiente por plataforma
+Configure em **Dashboard → Configurações → Integrações** ou no `backend/.env`.
 
 <details>
 <summary><strong>Meta Ads</strong></summary>
@@ -405,10 +388,10 @@ Após o deploy, configure as integrações em **Dashboard → Configurações �
 | Variável | Onde obter |
 |----------|------------|
 | `META_ACCESS_TOKEN` | [Meta Business → System Users](https://business.facebook.com/settings/system-users) |
-| `META_AD_ACCOUNT_ID` | Gerenciador de Anúncios → ID (formato `act_XXXXXXX`) |
-| `META_APP_ID` | [Meta Developers → Meus Apps](https://developers.facebook.com/apps) |
+| `META_AD_ACCOUNT_ID` | Gerenciador de Anúncios (`act_XXXXXXX`) |
+| `META_APP_ID` | [Meta Developers](https://developers.facebook.com/apps) |
 | `META_APP_SECRET` | Meta Developers → Configurações do App |
-| `META_PIXEL_ID` | Gerenciador de Eventos → ID do Pixel |
+| `META_PIXEL_ID` | Gerenciador de Eventos |
 | `META_PAGE_ID` | ID da página do Facebook |
 
 </details>
@@ -422,8 +405,8 @@ Após o deploy, configure as integrações em **Dashboard → Configurações �
 | `GOOGLE_ADS_CLIENT_ID` | [Google Cloud → Credenciais OAuth](https://console.cloud.google.com/apis/credentials) |
 | `GOOGLE_ADS_CLIENT_SECRET` | Google Cloud → Credenciais OAuth |
 | `GOOGLE_ADS_REFRESH_TOKEN` | Gerado via fluxo OAuth |
-| `GOOGLE_ADS_CUSTOMER_ID` | Google Ads → ID do cliente (`XXX-XXX-XXXX`) |
-| `GOOGLE_ADS_MANAGER_ID` | ID da conta gerenciadora (se aplicável) |
+| `GOOGLE_ADS_CUSTOMER_ID` | Google Ads (`XXX-XXX-XXXX`) |
+| `GOOGLE_ADS_MANAGER_ID` | Conta gerenciadora (se aplicável) |
 
 </details>
 
@@ -432,10 +415,10 @@ Após o deploy, configure as integrações em **Dashboard → Configurações �
 
 | Variável | Onde obter |
 |----------|------------|
-| `TIKTOK_ACCESS_TOKEN` | [TikTok Marketing API → App Management](https://business-api.tiktok.com/portal/apps) |
-| `TIKTOK_ADVERTISER_ID` | TikTok Ads Manager → ID do Anunciante |
-| `TIKTOK_APP_ID` | TikTok Marketing API → App Management |
-| `TIKTOK_APP_SECRET` | TikTok Marketing API → App Management |
+| `TIKTOK_ACCESS_TOKEN` | [TikTok Marketing API](https://business-api.tiktok.com/portal/apps) |
+| `TIKTOK_ADVERTISER_ID` | TikTok Ads Manager |
+| `TIKTOK_APP_ID` | TikTok Marketing API |
+| `TIKTOK_APP_SECRET` | TikTok Marketing API |
 | `TIKTOK_PIXEL_ID` | TikTok Events Manager |
 
 </details>
@@ -446,9 +429,9 @@ Após o deploy, configure as integrações em **Dashboard → Configurações �
 | Variável | Onde obter |
 |----------|------------|
 | `WHATSAPP_PHONE_NUMBER_ID` | [Meta Developers → WhatsApp](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) |
-| `WHATSAPP_BUSINESS_ACCOUNT_ID` | Meta Business Settings → WhatsApp Accounts |
-| `WHATSAPP_ACCESS_TOKEN` | Meta Developers → System Users → Token permanente |
-| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | Token customizado (qualquer string segura) |
+| `WHATSAPP_BUSINESS_ACCOUNT_ID` | Meta Business Settings |
+| `WHATSAPP_ACCESS_TOKEN` | Meta Developers → System Users |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | Token customizado |
 
 </details>
 
@@ -457,26 +440,17 @@ Após o deploy, configure as integrações em **Dashboard → Configurações �
 
 | Variável | Onde obter |
 |----------|------------|
-| `GA_MEASUREMENT_ID` | Google Analytics → Admin → Data Streams (`G-XXXXXXX`) |
-| `GA_PROPERTY_ID` | Google Analytics → Admin → Property Settings |
-| `GA_SERVICE_ACCOUNT_KEY` | [Google Cloud → Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) (JSON) |
+| `GA_MEASUREMENT_ID` | Google Analytics → Data Streams (`G-XXXXXXX`) |
+| `GA_PROPERTY_ID` | Google Analytics → Property Settings |
+| `GA_SERVICE_ACCOUNT_KEY` | [Google Cloud → Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) |
 
 </details>
 
-### Sincronização de campanhas
-
-**Automática (a cada 6h):** Já configurada via cron no backend.
-
-**Manual via API:**
+### Sincronização manual
 
 ```bash
-# Meta Ads
 curl -X POST https://seudominio.com/api/ads/meta/sync
-
-# Google Ads
 curl -X POST https://seudominio.com/api/ads/google/sync
-
-# TikTok Ads
 curl -X POST https://seudominio.com/api/ads/tiktok/sync
 ```
 
@@ -484,15 +458,13 @@ curl -X POST https://seudominio.com/api/ads/tiktok/sync
 
 ## 🚀 Primeiro Acesso (Setup Wizard)
 
-Ao acessar `https://seudominio.com/projeto-raul/` pela primeira vez, o assistente de configuração será exibido:
+Ao acessar pela primeira vez, o assistente de configuração será exibido:
 
 1. **Empresa** — Nome e logo
-2. **Licença** — Chave de licença (gerada com `node src/license.js generate pro`)
+2. **Licença** — Chave de licença HMAC
 3. **API Backend** — URL do backend (ex: `https://seudominio.com/api`)
-4. **Banco de Dados** — Credenciais do PostgreSQL (com teste de conexão)
+4. **Banco de Dados** — Credenciais do PostgreSQL
 5. **Resumo** — Revisão antes de confirmar
-
-> Após o setup, tudo pode ser alterado em **Dashboard → Configurações**.
 
 ---
 
@@ -501,114 +473,82 @@ Ao acessar `https://seudominio.com/projeto-raul/` pela primeira vez, o assistent
 ### Atualizar o projeto
 
 ```bash
-cd /var/www/mogibens
-
-# Puxar atualizações
+cd /var/www/sistemaleads
 git pull origin main
 
-# Atualizar backend
-cd backend
-npm install
-pm2 restart mogibens-api
+cd backend && npm install
+pm2 restart sistemaleads-api
 
-# Atualizar frontend
-cd ..
-npm install
-npm run build
+cd .. && npm install && npm run build
 sudo cp -r dist/* /var/www/html/projeto-raul/
 ```
 
-### Backup do banco de dados
+### Backup do banco
 
 ```bash
-# Backup manual
-pg_dump -h localhost -U mogibens_user -d mogibens > backup_$(date +%Y%m%d).sql
-
-# Restaurar backup
-psql -h localhost -U mogibens_user -d mogibens < backup_20260308.sql
+pg_dump -h localhost -U sistemaleads_user -d sistemaleads > backup_$(date +%Y%m%d).sql
 ```
 
 ### Backup automático (cron)
 
 ```bash
 crontab -e
-```
-
-Adicione:
-
-```
-# Backup diário às 3h da manhã
-0 3 * * * pg_dump -h localhost -U mogibens_user -d mogibens > /var/backups/mogibens/backup_$(date +\%Y\%m\%d).sql 2>&1
+# Adicione:
+0 3 * * * pg_dump -h localhost -U sistemaleads_user -d sistemaleads > /var/backups/sistemaleads/backup_$(date +\%Y\%m\%d).sql 2>&1
 ```
 
 ```bash
-sudo mkdir -p /var/backups/mogibens
+sudo mkdir -p /var/backups/sistemaleads
 ```
-
-### Monitoramento
-
-```bash
-pm2 monit                  # Monitor interativo
-pm2 logs mogibens-api      # Logs em tempo real
-sudo tail -f /var/log/nginx/error.log   # Logs do Nginx
-```
-
-### Checklist de produção
-
-- [ ] `NODE_ENV=production` no `.env`
-- [ ] `CORS_ORIGIN` com domínio correto (HTTPS)
-- [ ] `LICENSE_SECRET` com valor forte (`openssl rand -hex 32`)
-- [ ] PostgreSQL com senha forte
-- [ ] HTTPS ativo via Certbot
-- [ ] PM2 com startup automático configurado
-- [ ] Backup automático do banco
-- [ ] Firewall configurado (portas 80, 443, 22)
-- [ ] Tokens de API das plataformas configurados
 
 ### Firewall (UFW)
 
 ```bash
-sudo ufw allow 22/tcp     # SSH
-sudo ufw allow 80/tcp     # HTTP
-sudo ufw allow 443/tcp    # HTTPS
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 sudo ufw enable
-sudo ufw status
 ```
 
-> **Não** exponha a porta 3001 externamente — o Nginx faz o proxy.
+> **Não** exponha a porta 3001 externamente.
+
+### Checklist de produção
+
+- [ ] `NODE_ENV=production`
+- [ ] `CORS_ORIGIN` com domínio correto (HTTPS)
+- [ ] `LICENSE_SECRET` forte
+- [ ] PostgreSQL com senha forte
+- [ ] HTTPS ativo via Certbot
+- [ ] PM2 com startup automático
+- [ ] Backup automático do banco
+- [ ] Firewall configurado
 
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
-mogibens/
+sistemaleads/
 ├── src/                          # Frontend React + Vite
 │   ├── components/
 │   │   ├── dashboard/            # Componentes do painel admin
 │   │   ├── landing/              # Componentes da landing page
 │   │   └── ui/                   # shadcn/ui components
 │   ├── pages/                    # Páginas (rotas)
-│   │   ├── production/           # Páginas de produção (dados reais)
-│   │   └── ...                   # Páginas de demo (dados mock)
 │   ├── lib/                      # Utilitários e serviços
-│   │   ├── apiClient.ts          # Cliente HTTP para API
-│   │   ├── adsService.ts         # Serviço de Ads
-│   │   ├── configStore.ts        # Gerenciamento de configurações
-│   │   └── featureAccess.ts      # Controle de acesso por licença
-│   └── data/                     # Dados mock para demonstração
+│   └── data/                     # Dados mock
 │
 ├── backend/                      # API Node.js/Express
 │   ├── src/
-│   │   ├── index.js              # Entry point + middleware
-│   │   ├── db.js                 # PostgreSQL pool + migrations
-│   │   ├── license.js            # Geração/validação de licenças HMAC
-│   │   ├── routes/               # Endpoints da API
-│   │   └── services/             # Integrações com APIs externas
+│   │   ├── index.js              # Entry point
+│   │   ├── db.js                 # PostgreSQL + migrations
+│   │   ├── license.js            # Licenças HMAC
+│   │   ├── routes/               # Endpoints
+│   │   └── services/             # APIs externas
 │   ├── .env.example
 │   └── package.json
 │
-├── public/                       # Assets estáticos
+├── public/
 ├── index.html
 └── package.json
 ```
@@ -626,16 +566,12 @@ mogibens/
 | WhatsApp Business | ❌ | ✅ | ✅ |
 | Google Analytics | ❌ | ✅ | ✅ |
 | Geolocalização | ❌ | ✅ | ✅ |
-| Personalização de marca | ❌ | ✅ | ✅ |
 | API para CRM/ERP | ❌ | ❌ | ✅ |
-| Webhooks customizados | ❌ | ❌ | ✅ |
 | White-label | ❌ | ❌ | ✅ |
 | Multi-usuários | ❌ | ❌ | ✅ |
-| Relatórios agendados (PDF) | ❌ | ❌ | ✅ |
 
 ---
 
 ## ❓ Suporte
 
-- **E-mail**: suporte@mogibens.com
-- **WhatsApp** (Pro+): Disponível após onboarding dedicado
+- **E-mail**: suporte@sistemaleads.com

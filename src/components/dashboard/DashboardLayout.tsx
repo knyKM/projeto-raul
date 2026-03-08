@@ -28,7 +28,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   }
 
   const logoSrc = config.companyLogoUrl || defaultLogo;
-  const companyName = config.companyName || "Mogibens";
+  const companyName = config.companyName || "sistemaLeads";
 
   return (
     <div className="min-h-screen flex bg-muted/40 max-w-[100vw] overflow-x-hidden">

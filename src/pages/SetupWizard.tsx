@@ -166,9 +166,9 @@ const SetupWizard = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <img src={logo} alt="Mogibens" className="h-10 w-auto rounded-md" />
+        <img src={logo} alt="sistemaLeads" className="h-10 w-auto rounded-md" />
         <div>
-          <h1 className="font-display text-xl font-bold text-foreground">Mogibens</h1>
+          <h1 className="font-display text-xl font-bold text-foreground">sistemaLeads</h1>
           <p className="text-xs text-muted-foreground font-body">Configuração Inicial</p>
         </div>
       </div>
@@ -214,7 +214,7 @@ const SetupWizard = () => {
                 <Label htmlFor="companyName" className="font-body">Nome da Empresa</Label>
                 <Input
                   id="companyName"
-                  placeholder="Ex: Mogibens Consórcios"
+                  placeholder="Ex: Minha Empresa"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                 />
@@ -445,7 +445,7 @@ const SetupWizard = () => {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbName" className="font-body">Nome do Banco</Label>
-                  <Input id="dbName" placeholder="mogibens_db" value={dbName} onChange={(e) => { setDbName(e.target.value); setDbStatus('idle'); }} />
+                  <Input id="dbName" placeholder="sistemaleads" value={dbName} onChange={(e) => { setDbName(e.target.value); setDbStatus('idle'); }} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="dbUser" className="font-body">Usuário</Label>

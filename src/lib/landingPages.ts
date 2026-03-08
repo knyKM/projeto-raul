@@ -15,7 +15,7 @@ export interface LandingPageData {
   createdAt: string;
 }
 
-const STORAGE_KEY = "mogibens_landing_pages";
+const STORAGE_KEY = "sistemaleads_landing_pages";
 
 export function getLandingPages(): LandingPageData[] {
   const data = localStorage.getItem(STORAGE_KEY);

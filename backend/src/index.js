@@ -36,7 +36,7 @@ app.use((err, _req, res, _next) => {
 
 // ─── Start ──────────────────────────────────────────
 app.listen(PORT, async () => {
-  console.log(`🚀 Mogibens API running on port ${PORT}`);
+  console.log(`🚀 sistemaLeads API running on port ${PORT}`);
   const dbOk = await testConnection();
   console.log(dbOk ? '✅ Database connected' : '⚠️  Database not connected');
 });
