@@ -43,6 +43,8 @@ app.use('/overview', overviewRouter);
 app.use('/auth', authRouter);
 app.use('/mailing', mailingRouter);
 app.use('/reports', reportsRouter);
+app.use('/lead-tracking', leadTrackingRouter);
+app.use('/consultant', consultantRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
