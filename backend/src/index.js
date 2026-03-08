@@ -15,6 +15,7 @@ const leadsRouter = require('./routes/leads');
 const atendentesRouter = require('./routes/atendentes');
 const notificationsRouter = require('./routes/notifications');
 const overviewRouter = require('./routes/overview');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,7 @@ app.use('/leads', leadsRouter);
 app.use('/atendentes', atendentesRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/overview', overviewRouter);
+app.use('/auth', authRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
@@ -49,5 +51,17 @@ app.listen(PORT, async () => {
   console.log(dbOk ? '✅ Database connected' : '⚠️  Database not connected');
   if (dbOk) {
     await initTables();
+    // Create default admin if no users exist
+    const { pool } = require('./db');
+    const { hashPassword } = require('./routes/auth');
+    const existing = await pool.query('SELECT COUNT(*) FROM users');
+    if (parseInt(existing.rows[0].count) === 0) {
+      const hash = hashPassword('admin123');
+      await pool.query(
+        "INSERT INTO users (nome, email, password_hash, role) VALUES ('Administrador', 'admin@sistemaleads.com', $1, 'administrador')",
+        [hash]
+      );
+      console.log('👤 Default admin created: admin@sistemaleads.com / admin123');
+    }
   }
 });

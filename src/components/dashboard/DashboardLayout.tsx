@@ -1,26 +1,29 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog } from "lucide-react";
 import defaultLogo from "@/assets/logo-sistemaleads.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import { getConfig } from "@/lib/configStore";
 import { hasFeature, type Feature } from "@/lib/featureAccess";
+import { useAuth } from "@/lib/authContext";
 
-const navItems: { href: string; label: string; icon: typeof LayoutDashboard; feature?: Feature }[] = [
+const navItems: { href: string; label: string; icon: typeof LayoutDashboard; feature?: Feature; roles?: string[] }[] = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, feature: "dashboard_basic" },
   { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList, feature: "leads_basic" },
   { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone, feature: "ads_central" },
-  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single" },
+  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single", roles: ["supervisor", "administrador"] },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin, feature: "geo" },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users, feature: "atendentes" },
-  { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings" },
+  { href: "/dashboard/users", label: "Usuários", icon: UserCog, roles: ["administrador", "supervisor"] },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings", roles: ["administrador"] },
 ];
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const config = getConfig();
+  const { user, logout, hasRole } = useAuth();
 
   // Redirect to setup if not completed
   if (!config.setupCompleted) {
@@ -47,7 +50,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => {
+          {navItems.filter((item) => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
             const isActive = location.pathname === item.href;
             const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
@@ -72,17 +75,23 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </nav>
 
         <div className="p-3 border-t border-border space-y-1">
+          {user && (
+            <div className="px-3 py-2 mb-1">
+              <p className="text-xs font-body font-medium text-foreground truncate">{user.nome}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+            </div>
+          )}
           <div className="flex items-center justify-between px-3 py-1">
             <NotificationBell />
             <ThemeToggle />
           </div>
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          <button
+            onClick={() => { logout(); window.location.hash = '#/login'; }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-muted hover:text-foreground transition-colors w-full"
           >
             <LogOut className="w-4 h-4" />
-            Voltar ao Site
-          </Link>
+            Sair
+          </button>
         </div>
       </aside>
 
@@ -104,7 +113,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
         {/* Mobile nav */}
         <nav className="md:hidden flex items-center gap-1 px-4 py-2 bg-card border-b border-border overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-          {navItems.map((item) => {
+          {navItems.filter((item) => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
             const isActive = location.pathname === item.href;
             const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
