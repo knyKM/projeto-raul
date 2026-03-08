@@ -1,4 +1,4 @@
-export type LandingPageTemplate = 'completa' | 'simples' | 'destaque';
+export type LandingPageTemplate = 'completa' | 'simples' | 'destaque' | 'apelativo';
 
 export interface LandingPageData {
   id: string;

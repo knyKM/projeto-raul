@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLandingPage, generateSlug, type LandingPageData, type LandingPageTemplate } from "@/lib/landingPages";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Zap, Star } from "lucide-react";
+import { FileText, Zap, Star, Heart } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -101,7 +101,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
           {/* Template selector */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Modelo da Página</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <TemplateCard
                 selected={form.template === "completa"}
                 onClick={() => update("template", "completa")}
@@ -122,6 +122,13 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
                 icon={<Star className="w-5 h-5" />}
                 title="Destaque"
                 desc="Split-screen, features e chat widget"
+              />
+              <TemplateCard
+                selected={form.template === "apelativo"}
+                onClick={() => update("template", "apelativo")}
+                icon={<Heart className="w-5 h-5" />}
+                title="Apelativo"
+                desc="Persuasivo, comparativo, depoimentos e CTA forte"
               />
             </div>
           </div>
