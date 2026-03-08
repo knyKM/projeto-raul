@@ -215,6 +215,12 @@ const DashboardLeads = () => {
           </div>
         )}
       </div>
+
+      <MailingDialog
+        open={mailingOpen}
+        onOpenChange={setMailingOpen}
+        leadCount={leads.length}
+      />
     </DashboardLayout>
   );
 };
