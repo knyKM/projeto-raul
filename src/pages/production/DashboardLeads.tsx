@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle2, User, Users, FileText, Loader2 } from "lucide-react";
+import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { hasFeature } from "@/lib/featureAccess";
 import { Button } from "@/components/ui/button";
-import { PhoneOutgoing } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import MailingDialog from "@/components/dashboard/leads/MailingDialog";
+import LeadCard from "@/components/dashboard/leads/LeadCard";
 
 interface Lead {
   id: number;
@@ -76,7 +74,7 @@ const DashboardLeads = () => {
     const res = await api.put(`/leads/${leadId}`, { status: newStatus });
     if (res.ok) {
       setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, status: newStatus } : l));
-      fetchData(); // refresh stats
+      fetchData();
     }
   };
 
@@ -86,11 +84,6 @@ const DashboardLeads = () => {
       status: consultorId ? 'em_atendimento' : 'novo',
     });
     if (res.ok) fetchData();
-  };
-
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -131,7 +124,7 @@ const DashboardLeads = () => {
           </div>
         </div>
 
-        {/* Leads table */}
+        {/* Leads list */}
         {loading ? (
           <Card>
             <CardContent className="flex items-center justify-center py-16">
@@ -151,66 +144,15 @@ const DashboardLeads = () => {
         ) : (
           <div className="space-y-2">
             {leads.map((lead) => (
-              <Card key={lead.id} className="hover:shadow-sm transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    {/* Lead info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-body font-semibold text-foreground text-sm truncate">{lead.nome}</p>
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${statusColors[lead.status] || ''}`}>
-                          {statusLabels[lead.status] || lead.status}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground font-body">
-                        <span>📞 {lead.telefone}</span>
-                        {lead.email && <span>✉️ {lead.email}</span>}
-                        <span>🕐 {formatDate(lead.created_at)}</span>
-                      </div>
-                      {lead.landing_page_slug && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <FileText className="w-3 h-3 text-muted-foreground/60" />
-                          <span className="text-[11px] font-body text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
-                            {lead.landing_page_slug}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Select
-                        value={lead.status}
-                        onValueChange={(v) => handleStatusChange(lead.id, v)}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs font-body">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="novo">Pendente</SelectItem>
-                          <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
-                          <SelectItem value="concluido">Concluído</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Select
-                        value={lead.consultor_id?.toString() || "none"}
-                        onValueChange={(v) => handleAssign(lead.id, v === "none" ? "" : v)}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs font-body">
-                          <SelectValue placeholder="Atribuir..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Sem atendente</SelectItem>
-                          {atendentes.map((a) => (
-                            <SelectItem key={a.id} value={a.id.toString()}>{a.nome}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                atendentes={atendentes}
+                statusColors={statusColors}
+                statusLabels={statusLabels}
+                onStatusChange={handleStatusChange}
+                onAssign={handleAssign}
+              />
             ))}
           </div>
         )}
