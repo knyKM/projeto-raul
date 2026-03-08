@@ -304,6 +304,9 @@ const LandingPageView = () => {
       <footer className="py-6 bg-navy-dark border-t border-border/10 text-center">
         <p className="text-xs font-body text-gold-light/30">© {new Date().getFullYear()} Mogibens · Consórcio de Veículos</p>
       </footer>
+
+      {/* Exit Intent Popup */}
+      <ExitPopup vehicleName={page.vehicleName} slug={slug!} whatsappUrl={whatsappUrl} />
     </div>
   );
 };
