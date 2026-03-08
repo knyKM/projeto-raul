@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ExternalLink, Trash2, Copy, FileText, Eye, Users, TrendingUp, Zap, Loader2 } from "lucide-react";
+import { Plus, ExternalLink, Trash2, Copy, FileText, Eye, Users, TrendingUp, Zap, Loader2, Star } from "lucide-react";
 import { getLandingPages, deleteLandingPage, type LandingPageData } from "@/lib/landingPages";
 import CreateLandingPageDialog from "@/components/dashboard/landing-pages/CreateLandingPageDialog";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
@@ -71,7 +71,16 @@ const DashboardLandingPages = () => {
     setDialogOpen(true);
   };
 
-  const templateLabel = (t: string) => t === 'simples' ? 'Simples' : 'Completa';
+  const templateLabel = (t: string) => {
+    if (t === 'simples') return 'Simples';
+    if (t === 'destaque') return 'Destaque';
+    return 'Completa';
+  };
+  const templateIcon = (t: string) => {
+    if (t === 'simples') return <Zap className="w-3 h-3 mr-1" />;
+    if (t === 'destaque') return <Star className="w-3 h-3 mr-1" />;
+    return <FileText className="w-3 h-3 mr-1" />;
+  };
 
   return (
     <DashboardLayout>
@@ -119,7 +128,7 @@ const DashboardLandingPages = () => {
                             : 'bg-primary/80 text-primary-foreground border-primary'
                         } backdrop-blur-sm`}
                       >
-                        {page.template === 'simples' ? <Zap className="w-3 h-3 mr-1" /> : <FileText className="w-3 h-3 mr-1" />}
+                        {templateIcon(page.template)}
                         {templateLabel(page.template)}
                       </Badge>
                     </div>

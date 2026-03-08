@@ -7,13 +7,27 @@ Documentação dos recursos disponíveis na plataforma, focada em **atendimento,
 ## 🎯 Captação de Leads
 
 ### Landing Pages Dinâmicas
-- **Dois modelos disponíveis:**
-  - **Completa** — Hero com CTA, simulador de parcelas, seção de benefícios e formulário de captura
+- **Três modelos disponíveis:**
+  - **Completa** — Hero com CTA, simulador de parcelas, seção de benefícios, formulário de captura, chat widget e pop-up de saída
   - **Simples** — Página direta com imagem do veículo, valor e formulário (ideal para tráfego pago)
+  - **Destaque** — Layout split-screen (imagem + formulário lado a lado), lista de features, chat widget integrado
 - Geração automática de rotas via `/lp/:slug`
 - Configuração de marca, modelo, valores de crédito e parcelas
 - WhatsApp integrado como CTA secundário
 - **Indicadores por LP:** visitas, leads captados e taxa de conversão (%) para comparar efetividade entre modelos
+
+### Chat Widget
+- Widget flutuante em todas as landing pages
+- Respostas automáticas para perguntas frequentes (consórcio, parcelas, contemplação, FGTS)
+- Quick replies pré-configuradas
+- Captura de lead inline após 3 interações
+- Leads salvos com origem `chat_widget` para análise de canal
+
+### Pop-up de Saída (Exit Intent)
+- Detecta intenção de saída do visitante (mouse leave no desktop, timeout no mobile)
+- Formulário simplificado com CTA de "condição especial"
+- Leads salvos com origem `exit_popup`
+- Exibe apenas 1x por sessão
 
 ### Rastreamento de Visitas
 - Geolocalização automática (IP + GPS do navegador)
@@ -92,6 +106,28 @@ Popup inteligente exibido quando o visitante tenta sair da landing page:
 
 ---
 
+## 🎯 Remarketing List
+
+Exportação de leads frios para criação de audiências customizadas:
+
+- **Filtros:** leads não fechados, nunca contatados, ou marcados como perdidos
+- **Período:** configurável (ex: sem atividade há mais de 7 dias)
+- **Formatos de exportação:**
+  - Meta Ads (Custom Audience) — email, phone, fn
+  - Google Ads (Customer Match) — Email, Phone, First Name, Last Name
+  - CSV genérico
+- Contador de leads em tempo real conforme filtros
+
+---
+
+## 📱 Follow-up Automático via WhatsApp
+
+- Envio automático de mensagem para leads pendentes após X minutos
+- Template personalizável com variáveis `{nome}` e `{veiculo}`
+- Limite de 50 leads por execução
+- Notificação automática ao enviar follow-ups
+- Configuração de tempo mínimo e mensagem via painel
+
 ## 📞 Integração com Discador 3CPlus
 
 ### Montar Mailing
@@ -123,7 +159,9 @@ Popup inteligente exibido quando o visitante tenta sair da landing page:
 
 - Envio de mensagens via WhatsApp Business API
 - CTA direto nas landing pages para WhatsApp
+- Follow-up automático para leads não contatados
 - Configuração de número, token e Business Account ID
+- Webhook para recebimento de mensagens
 
 ---
 

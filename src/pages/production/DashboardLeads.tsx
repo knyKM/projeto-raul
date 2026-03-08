@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing, LayoutList, Columns3 } from "lucide-react";
+import { Clock, CheckCircle2, User, Users, Loader2, PhoneOutgoing, LayoutList, Columns3, Target } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { hasFeature } from "@/lib/featureAccess";
@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import MailingDialog from "@/components/dashboard/leads/MailingDialog";
 import LeadCard from "@/components/dashboard/leads/LeadCard";
 import KanbanBoard from "@/components/dashboard/leads/KanbanBoard";
+import RemarketingDialog from "@/components/dashboard/leads/RemarketingDialog";
 
 interface Lead {
   id: number;
@@ -65,6 +66,7 @@ const DashboardLeads = () => {
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
   const [mailingOpen, setMailingOpen] = useState(false);
+  const [remarketingOpen, setRemarketingOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
 
   const fetchData = async () => {
@@ -125,6 +127,11 @@ const DashboardLeads = () => {
                 <Columns3 className="w-4 h-4" />
               </button>
             </div>
+
+            <Button variant="outline" size="sm" className="gap-2 font-body" onClick={() => setRemarketingOpen(true)}>
+              <Target className="w-4 h-4" />
+              Remarketing
+            </Button>
 
             {canExportMailing ? (
               <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
@@ -195,6 +202,12 @@ const DashboardLeads = () => {
         open={mailingOpen}
         onOpenChange={setMailingOpen}
         leads={leads.map(l => ({ id: l.id, nome: l.nome, telefone: l.telefone }))}
+      />
+
+      <RemarketingDialog
+        open={remarketingOpen}
+        onOpenChange={setRemarketingOpen}
+        leads={leads.map(l => ({ id: l.id, nome: l.nome, telefone: l.telefone, email: l.email, status: l.status, created_at: l.created_at }))}
       />
     </DashboardLayout>
   );
