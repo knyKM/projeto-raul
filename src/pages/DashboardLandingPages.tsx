@@ -128,7 +128,7 @@ const DashboardLandingPages = () => {
                             : 'bg-primary/80 text-primary-foreground border-primary'
                         } backdrop-blur-sm`}
                       >
-                        {page.template === 'simples' ? <Zap className="w-3 h-3 mr-1" /> : <FileText className="w-3 h-3 mr-1" />}
+                        {templateIcon(page.template)}
                         {templateLabel(page.template)}
                       </Badge>
                     </div>
