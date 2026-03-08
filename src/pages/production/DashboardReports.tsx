@@ -274,7 +274,10 @@ const DashboardReports = () => {
                     <Calendar
                       mode="range"
                       selected={dateRange}
-                      onSelect={setDateRange}
+                      onSelect={(range) => {
+                        setDateRange(range);
+                        if (range?.from && range?.to) fetchData(range.from, range.to);
+                      }}
                       numberOfMonths={2}
                       locale={ptBR}
                     />
