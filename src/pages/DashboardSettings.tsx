@@ -181,7 +181,7 @@ const DashboardSettings = () => {
     const res = await triggerAdsSync(platform);
     setStatus(s => ({ ...s, syncing: false }));
     if (res.ok && res.data?.synced) {
-      toast({ title: `${platform === 'meta' ? 'Meta' : platform === 'google' ? 'Google' : 'TikTok'} Ads sincronizado`, description: `${res.data.campaigns || 0} campanhas importadas.` });
+      toast({ title: `${platform === 'meta' ? 'Meta' : platform === 'google' ? 'Google' : 'TikTok'} Ads sincronizado`, description: `Dados sincronizados com sucesso.` });
     } else {
       toast({ title: "Erro na sincronização", description: res.error || 'Tente novamente.', variant: "destructive" });
     }
