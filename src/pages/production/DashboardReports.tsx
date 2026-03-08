@@ -218,10 +218,13 @@ const DashboardReports = () => {
 
   const formattedTrend = useMemo(() => {
     if (!data) return [];
-    return data.dailyTrend.map(d => ({
-      ...d,
-      date: format(new Date(d.date + 'T12:00:00'), 'dd/MM', { locale: ptBR }),
-    }));
+    return data.dailyTrend.map(d => {
+      try {
+        const dateStr = String(d.date).substring(0, 10); // extract YYYY-MM-DD
+        const parsed = new Date(dateStr + 'T12:00:00');
+        return { ...d, date: isNaN(parsed.getTime()) ? String(d.date) : format(parsed, 'dd/MM', { locale: ptBR }) };
+      } catch { return { ...d, date: String(d.date) }; }
+    });
   }, [data]);
 
   const hourlyFull = useMemo(() => {
