@@ -1,6 +1,6 @@
 # sistemaLeads — Plataforma de Gestão de Leads e Ads
 
-Sistema completo para gestão de leads, campanhas de anúncios (Meta, Google, TikTok) e landing pages dinâmicas.
+Sistema completo para gestão de leads, campanhas de anúncios (Meta, Google, TikTok), landing pages dinâmicas e geolocalização de acessos com mapa interativo.
 
 ---
 
@@ -16,9 +16,10 @@ Sistema completo para gestão de leads, campanhas de anúncios (Meta, Google, Ti
 8. [Sistema de Licenças (HMAC)](#-sistema-de-licenças-hmac)
 9. [Integrações (Meta, Google, TikTok, WhatsApp, GA4)](#-integrações)
 10. [Primeiro Acesso (Setup Wizard)](#-primeiro-acesso-setup-wizard)
-11. [Manutenção e Monitoramento](#-manutenção-e-monitoramento)
-12. [Estrutura do Projeto](#-estrutura-do-projeto)
-13. [Planos e Licenciamento](#-planos-e-licenciamento)
+11. [Funcionalidades do Dashboard](#-funcionalidades-do-dashboard)
+12. [Manutenção e Monitoramento](#-manutenção-e-monitoramento)
+13. [Estrutura do Projeto](#-estrutura-do-projeto)
+14. [Planos e Licenciamento](#-planos-e-licenciamento)
 
 ---
 
@@ -126,6 +127,7 @@ psql -h localhost -U sistemaleads_user -d sistemaleads
 | `ads_daily_metrics` | Métricas diárias por plataforma |
 | `ads_sync_log` | Log de sincronizações |
 | `leads` | Leads capturados |
+| `landing_page_visits` | Acessos às landing pages (com geolocalização) |
 
 ---
 
@@ -314,8 +316,6 @@ Se você está rodando o projeto no WSL ao invés de um servidor Linux dedicado,
 
 ### 1. Configurar o arquivo hosts do Windows
 
-Como o domínio não está registrado publicamente (ou você quer testar localmente), adicione-o ao arquivo hosts do **Windows**:
-
 1. Abra o **Bloco de Notas como Administrador**
 2. Abra o arquivo `C:\Windows\System32\drivers\etc\hosts`
 3. Adicione ao final:
@@ -325,37 +325,19 @@ Como o domínio não está registrado publicamente (ou você quer testar localme
 127.0.0.1  www.sistemaleadsraul.com
 ```
 
-> **Dica:** Substitua pelo seu domínio desejado. Isso faz o Windows resolver o domínio para o localhost.
-
 ### 2. Nginx no WSL — usar `localhost` como alternativa
-
-Se preferir acessar sem domínio customizado, use `server_name localhost _`:
 
 ```nginx
 server {
     listen 80 default_server;
     server_name localhost _;
-
     # ... restante da config igual ...
 }
 ```
 
-Assim você acessa diretamente via `http://localhost/projeto-raul/`.
+Acesse via `http://localhost/projeto-raul/`.
 
-### 3. Verificar se o Nginx está acessível do Windows
-
-```bash
-# No WSL, verificar se o Nginx está rodando:
-sudo systemctl status nginx
-
-# Testar localmente no WSL:
-curl http://localhost/projeto-raul/
-
-# Se não funcionar, reinicie:
-sudo systemctl restart nginx
-```
-
-### 4. Diferenças entre WSL e Linux dedicado
+### 3. Diferenças entre WSL e Linux dedicado
 
 | Item | Linux dedicado | WSL |
 |------|---------------|-----|
@@ -364,14 +346,10 @@ sudo systemctl restart nginx
 | Firewall (UFW) | Necessário | Não necessário |
 | PM2 startup | Funciona com systemd | Pode precisar iniciar manualmente |
 | Hosts file | Não necessário (DNS resolve) | Editar `C:\Windows\System32\drivers\etc\hosts` |
-| Portas | Expostas diretamente | WSL 2 faz port-forwarding automático |
 
-### 5. Iniciar serviços manualmente no WSL
-
-O WSL nem sempre executa serviços automaticamente no boot. Crie um script de inicialização:
+### 4. Script de inicialização para WSL
 
 ```bash
-# Criar script ~/start-sistemaleads.sh
 cat << 'EOF' > ~/start-sistemaleads.sh
 #!/bin/bash
 sudo service nginx start
@@ -381,18 +359,6 @@ echo "✅ sistemaLeads iniciado! Acesse http://localhost/projeto-raul/"
 EOF
 chmod +x ~/start-sistemaleads.sh
 ```
-
-Execute sempre que abrir o WSL:
-
-```bash
-~/start-sistemaleads.sh
-```
-
-### 6. Para produção real
-
-Se quiser expor o WSL para a internet (não recomendado para produção):
-- Use um túnel como [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) ou [ngrok](https://ngrok.com/)
-- Ou migre para um VPS (DigitalOcean, Contabo, etc.) seguindo as instruções padrão deste README
 
 ---
 
@@ -554,6 +520,36 @@ Ao acessar pela primeira vez, o assistente de configuração será exibido:
 4. **Banco de Dados** — Credenciais do PostgreSQL
 5. **Resumo** — Revisão antes de confirmar
 
+> **Nota:** Após completar o setup, ele não será exibido novamente. A configuração é salva localmente e no backend.
+
+---
+
+## 📊 Funcionalidades do Dashboard
+
+### Visão Geral (`/dashboard`)
+Resumo com métricas de leads, acessos, taxa de conversão e gráficos de evolução.
+
+### Leads (`/dashboard/leads`)
+Tabela completa de leads capturados com filtros por data, origem e status. Exportação disponível.
+
+### Geolocalização (`/dashboard/geo`)
+- **Mapa interativo** (Leaflet/OpenStreetMap) com marcadores para cada acesso geolocalizado
+- Cards de resumo: total de acessos, cidades identificadas, acessos sem localização
+- Tabela de cidades com percentual de distribuição
+- Log de acessos recentes com landing page de origem e localização
+
+### Anúncios (`/dashboard/ads`)
+Métricas de campanhas Meta Ads, Google Ads e TikTok Ads com ranking, funil de conversão e alertas de metas.
+
+### Landing Pages (`/dashboard/landing-pages`)
+Criação e gerenciamento de landing pages dinâmicas com editor visual.
+
+### Atendentes (`/dashboard/atendentes`)
+Gestão de atendentes do WhatsApp Business com distribuição automática de leads.
+
+### Configurações (`/dashboard/settings`)
+Configuração de integrações, dados da empresa, licença e preferências.
+
 ---
 
 ## 🔄 Manutenção e Monitoramento
@@ -564,9 +560,11 @@ Ao acessar pela primeira vez, o assistente de configuração será exibido:
 cd /var/www/sistemaleads
 git pull origin main
 
+# Backend
 cd backend && npm install
 pm2 restart sistemaleads-api
 
+# Frontend
 cd .. && npm install && npm run build
 sudo cp -r dist/* /var/www/html/projeto-raul/
 ```
@@ -620,19 +618,49 @@ sistemaleads/
 ├── src/                          # Frontend React + Vite
 │   ├── components/
 │   │   ├── dashboard/            # Componentes do painel admin
-│   │   ├── landing/              # Componentes da landing page
+│   │   │   ├── ads/              # Componentes de anúncios
+│   │   │   └── landing-pages/    # Componentes de landing pages
+│   │   ├── landing/              # Componentes da landing page pública
 │   │   └── ui/                   # shadcn/ui components
-│   ├── pages/                    # Páginas (rotas)
+│   ├── pages/
+│   │   ├── production/           # Páginas de produção (dados reais da API)
+│   │   │   ├── DashboardOverview.tsx
+│   │   │   ├── DashboardLeads.tsx
+│   │   │   ├── DashboardGeo.tsx  # Mapa interativo + geolocalização
+│   │   │   ├── DashboardAtendentes.tsx
+│   │   │   └── DashboardAds.tsx
+│   │   ├── Dashboard*.tsx        # Páginas de teste (dados mock)
+│   │   ├── SetupWizard.tsx       # Assistente de primeira configuração
+│   │   └── LandingPageView.tsx   # Visualização de landing pages
 │   ├── lib/                      # Utilitários e serviços
-│   └── data/                     # Dados mock
+│   │   ├── apiClient.ts          # Cliente HTTP para o backend
+│   │   ├── configStore.ts        # Gerenciamento de configuração local
+│   │   ├── featureAccess.ts      # Controle de acesso por plano
+│   │   └── adsService.ts         # Serviço de anúncios
+│   ├── data/                     # Dados mock para testes
+│   └── hooks/                    # React hooks customizados
 │
 ├── backend/                      # API Node.js/Express
 │   ├── src/
 │   │   ├── index.js              # Entry point
-│   │   ├── db.js                 # PostgreSQL + migrations
-│   │   ├── license.js            # Licenças HMAC
-│   │   ├── routes/               # Endpoints
-│   │   └── services/             # APIs externas
+│   │   ├── db.js                 # PostgreSQL + migrations automáticas
+│   │   ├── license.js            # Geração/validação de licenças HMAC
+│   │   ├── routes/
+│   │   │   ├── ads.js            # CRUD e sync de campanhas
+│   │   │   ├── analytics.js      # Métricas e analytics
+│   │   │   ├── atendentes.js     # Gestão de atendentes
+│   │   │   ├── config.js         # Configurações
+│   │   │   ├── health.js         # Health check
+│   │   │   ├── leads.js          # Leads + geolocalização
+│   │   │   ├── notifications.js  # Notificações
+│   │   │   ├── overview.js       # Dashboard overview
+│   │   │   └── whatsapp.js       # Integração WhatsApp
+│   │   ├── services/
+│   │   │   ├── googleAds.js      # API Google Ads
+│   │   │   ├── metaAds.js        # API Meta/Facebook Ads
+│   │   │   └── tiktokAds.js      # API TikTok Ads
+│   │   └── cron/
+│   │       └── syncAds.js        # Sincronização automática
 │   ├── .env.example
 │   └── package.json
 │
@@ -653,10 +681,28 @@ sistemaleads/
 | Meta/Google/TikTok Ads | ❌ | ✅ | ✅ |
 | WhatsApp Business | ❌ | ✅ | ✅ |
 | Google Analytics | ❌ | ✅ | ✅ |
-| Geolocalização | ❌ | ✅ | ✅ |
+| Geolocalização + Mapa | ❌ | ✅ | ✅ |
 | API para CRM/ERP | ❌ | ❌ | ✅ |
 | White-label | ❌ | ❌ | ✅ |
 | Multi-usuários | ❌ | ❌ | ✅ |
+
+---
+
+## 🛠️ Tecnologias
+
+### Frontend
+- **React 18** + **TypeScript** + **Vite**
+- **Tailwind CSS** + **shadcn/ui**
+- **Recharts** (gráficos)
+- **Leaflet** + **react-leaflet** (mapa interativo)
+- **Framer Motion** (animações)
+- **React Router** (HashRouter para SPA)
+
+### Backend
+- **Node.js** + **Express**
+- **PostgreSQL** (banco de dados)
+- **PM2** (gerenciamento de processos)
+- APIs: Meta Ads, Google Ads, TikTok Ads, WhatsApp Cloud API
 
 ---
 
