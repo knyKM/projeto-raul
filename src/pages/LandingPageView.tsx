@@ -3,9 +3,10 @@ import { getLandingPageBySlug } from "@/lib/landingPages";
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle2, Shield, Clock, CreditCard, ArrowLeft, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import { api } from "@/lib/apiClient";
 
 const benefits = [
   { icon: Shield, title: "100% Seguro", desc: "Regulamentado pelo Banco Central" },
@@ -18,6 +19,46 @@ const LandingPageView = () => {
   const page = slug ? getLandingPageBySlug(slug) : undefined;
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  // Track visit + geolocation on mount
+  useEffect(() => {
+    if (!slug) return;
+
+    const trackVisit = async (lat?: number, lng?: number) => {
+      try {
+        // Try reverse geocoding with a free API
+        let cidade = undefined;
+        let estado = undefined;
+        if (lat && lng) {
+          try {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`);
+            const geoData = await geoRes.json();
+            cidade = geoData?.address?.city || geoData?.address?.town || geoData?.address?.municipality;
+            estado = geoData?.address?.state_code?.toUpperCase() || geoData?.address?.state?.substring(0, 2).toUpperCase();
+          } catch { /* ignore geo errors */ }
+        }
+
+        await api.post('/leads/track-visit', {
+          landing_page_slug: slug,
+          latitude: lat || null,
+          longitude: lng || null,
+          cidade: cidade || null,
+          estado: estado || null,
+        });
+      } catch { /* silent */ }
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => trackVisit(pos.coords.latitude, pos.coords.longitude),
+        () => trackVisit(), // denied - track without geo
+        { timeout: 5000 }
+      );
+    } else {
+      trackVisit();
+    }
+  }, [slug]);
 
   if (!page) {
     return (
@@ -32,14 +73,34 @@ const LandingPageView = () => {
 
   const whatsappUrl = `https://wa.me/${page.whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no consórcio do ${page.vehicleName}. Pode me ajudar?`)}`;
 
-  const handleSubmitLead = (e: React.FormEvent) => {
+  const handleSubmitLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lead.name || !lead.phone) {
       toast({ title: "Preencha nome e telefone", variant: "destructive" });
       return;
     }
-    toast({ title: "Mensagem enviada!", description: "Entraremos em contato em breve." });
-    setLead({ name: "", phone: "", email: "" });
+
+    setSubmitting(true);
+    try {
+      const res = await api.post('/leads', {
+        nome: lead.name,
+        telefone: lead.phone,
+        email: lead.email || null,
+        origem: 'landing_page',
+        landing_page_slug: slug,
+      });
+
+      if (res.ok) {
+        toast({ title: "Mensagem enviada!", description: "Entraremos em contato em breve." });
+        setLead({ name: "", phone: "", email: "" });
+      } else {
+        toast({ title: "Erro ao enviar", description: res.error || "Tente novamente.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro de conexão", description: "Não foi possível enviar. Tente pelo WhatsApp.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const installmentOptions = [
@@ -183,12 +244,14 @@ const LandingPageView = () => {
               value={lead.name}
               onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))}
               className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
+              maxLength={100}
             />
             <Input
               placeholder="Telefone com DDD"
               value={lead.phone}
               onChange={(e) => setLead((l) => ({ ...l, phone: e.target.value }))}
               className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
+              maxLength={20}
             />
             <Input
               placeholder="E-mail (opcional)"
@@ -196,9 +259,10 @@ const LandingPageView = () => {
               value={lead.email}
               onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))}
               className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
+              maxLength={255}
             />
-            <Button variant="hero" size="lg" className="w-full gap-2" type="submit">
-              <MessageCircle className="w-4 h-4" />Enviar
+            <Button variant="hero" size="lg" className="w-full gap-2" type="submit" disabled={submitting}>
+              <MessageCircle className="w-4 h-4" />{submitting ? "Enviando..." : "Enviar"}
             </Button>
           </form>
 
