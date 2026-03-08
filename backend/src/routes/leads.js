@@ -169,12 +169,20 @@ router.get('/geo', async (_req, res, next) => {
 // ─── GET /leads/lp-stats — landing page performance ─
 router.get('/lp-stats', async (_req, res, next) => {
   try {
-    // Visits per LP — count page_view events from lead_behavior_events
+    // Visits per LP — combine page_visits + lead_behavior_events (page_view)
     const { rows: visits } = await pool.query(`
-      SELECT landing_page_slug AS slug, COUNT(*) AS visits
-      FROM lead_behavior_events
-      WHERE event_type = 'page_view' AND landing_page_slug IS NOT NULL
-      GROUP BY landing_page_slug
+      SELECT slug, SUM(visits) AS visits FROM (
+        SELECT landing_page_slug AS slug, COUNT(*) AS visits
+        FROM page_visits
+        WHERE landing_page_slug IS NOT NULL
+        GROUP BY landing_page_slug
+        UNION ALL
+        SELECT landing_page_slug AS slug, COUNT(*) AS visits
+        FROM lead_behavior_events
+        WHERE event_type = 'page_view' AND landing_page_slug IS NOT NULL
+        GROUP BY landing_page_slug
+      ) combined
+      GROUP BY slug
     `);
 
     // Leads per LP
@@ -194,7 +202,6 @@ router.get('/lp-stats', async (_req, res, next) => {
       if (!map[l.slug]) map[l.slug] = { slug: l.slug, visits: 0, leads: 0, conversion: 0 };
       map[l.slug].leads = parseInt(l.leads);
     }
-    // Calc conversion
     for (const key of Object.keys(map)) {
       const item = map[key];
       item.conversion = item.visits > 0 ? Math.round((item.leads / item.visits) * 10000) / 100 : 0;
