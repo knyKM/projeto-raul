@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Plus, ExternalLink, Trash2, Copy, FileText } from "lucide-react";
 import { getLandingPages, deleteLandingPage, type LandingPageData } from "@/lib/landingPages";
 import CreateLandingPageDialog from "@/components/dashboard/landing-pages/CreateLandingPageDialog";
+import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { useToast } from "@/hooks/use-toast";
+import { canCreateLandingPage } from "@/lib/featureAccess";
+import { toast as sonnerToast } from "sonner";
 
 const DashboardLandingPages = () => {
   const [pages, setPages] = useState<LandingPageData[]>(getLandingPages());
@@ -32,6 +35,17 @@ const DashboardLandingPages = () => {
     setDialogOpen(true);
   };
 
+  const handleNewPage = () => {
+    if (!canCreateLandingPage(pages.length)) {
+      sonnerToast.error("Limite atingido", {
+        description: "Seu plano Free permite apenas 1 landing page ativa. Faça upgrade para criar mais.",
+      });
+      return;
+    }
+    setEditingPage(undefined);
+    setDialogOpen(true);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-4 sm:space-y-6">
@@ -40,7 +54,7 @@ const DashboardLandingPages = () => {
             <h1 className="text-xl sm:text-2xl font-bold font-display text-foreground">Landing Pages</h1>
             <p className="text-sm text-muted-foreground font-body">Crie páginas de divulgação para seus veículos</p>
           </div>
-          <Button onClick={() => { setEditingPage(undefined); setDialogOpen(true); }} className="gap-2">
+          <Button onClick={handleNewPage} className="gap-2">
             <Plus className="w-4 h-4" />
             Nova Landing Page
           </Button>
