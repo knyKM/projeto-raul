@@ -159,7 +159,9 @@ Exportação de leads frios para criação de audiências customizadas:
 
 - Envio de mensagens via WhatsApp Business API
 - CTA direto nas landing pages para WhatsApp
+- Follow-up automático para leads não contatados
 - Configuração de número, token e Business Account ID
+- Webhook para recebimento de mensagens
 
 ---
 
