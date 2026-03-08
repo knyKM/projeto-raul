@@ -237,7 +237,7 @@ const DashboardReports = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">Central de Relatórios</h1>
             <p className="text-sm text-muted-foreground font-body mt-1">Análises e insights dos seus leads</p>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 font-body" onClick={fetchData} disabled={loading}>
+          <Button variant="outline" size="sm" className="gap-2 font-body" onClick={handleRefresh} disabled={loading}>
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
