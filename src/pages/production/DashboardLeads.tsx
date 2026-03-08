@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import MailingDialog from "@/components/dashboard/leads/MailingDialog";
 import LeadCard from "@/components/dashboard/leads/LeadCard";
 import KanbanBoard from "@/components/dashboard/leads/KanbanBoard";
+import RemarketingDialog from "@/components/dashboard/leads/RemarketingDialog";
 
 interface Lead {
   id: number;
