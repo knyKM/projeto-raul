@@ -23,6 +23,7 @@ const navItems: { href: string; label: string; icon: typeof LayoutDashboard; fea
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const config = getConfig();
+  const { user, logout, hasRole } = useAuth();
 
   // Redirect to setup if not completed
   if (!config.setupCompleted) {

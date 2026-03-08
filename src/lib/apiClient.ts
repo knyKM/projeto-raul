@@ -28,9 +28,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   try {
+    const token = localStorage.getItem('sistemaleads_token');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch(`${baseUrl}${path}`, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: body ? JSON.stringify(body) : undefined,
     });
 
