@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
+import MailingDialog from "@/components/dashboard/leads/MailingDialog";
 
 interface Lead {
   id: number;
@@ -54,6 +55,7 @@ const DashboardLeads = () => {
   const [stats, setStats] = useState<LeadStats>({ pendentes: "0", em_atendimento: "0", concluidos: "0", total: "0" });
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mailingOpen, setMailingOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -101,7 +103,7 @@ const DashboardLeads = () => {
           </div>
           <div className="flex items-center gap-2">
             {canExportMailing ? (
-              <Button variant="gold" size="sm" className="gap-2 font-body">
+              <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
                 <PhoneOutgoing className="w-4 h-4" />
                 Montar Mailing
               </Button>
@@ -213,6 +215,12 @@ const DashboardLeads = () => {
           </div>
         )}
       </div>
+
+      <MailingDialog
+        open={mailingOpen}
+        onOpenChange={setMailingOpen}
+        leadCount={leads.length}
+      />
     </DashboardLayout>
   );
 };
