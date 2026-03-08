@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
+import MailingDialog from "@/components/dashboard/leads/MailingDialog";
 
 interface Lead {
   id: number;
