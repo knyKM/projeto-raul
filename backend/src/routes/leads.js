@@ -128,7 +128,8 @@ router.post('/track-visit', async (req, res, next) => {
 // ─── GET /leads/geo — geo data for dashboard ────────
 router.get('/geo', async (_req, res, next) => {
   try {
-    const { rows } = await pool.query(`
+    // Grouped by city
+    const { rows: locations } = await pool.query(`
       SELECT cidade, estado, COUNT(*) as total
       FROM page_visits
       WHERE cidade IS NOT NULL
@@ -137,9 +138,26 @@ router.get('/geo', async (_req, res, next) => {
       LIMIT 50
     `);
 
+    // Total visits
     const { rows: totalRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits');
 
-    res.json({ locations: rows, totalVisits: parseInt(totalRows[0].total) });
+    // Recent visits (all, including those without city)
+    const { rows: recent } = await pool.query(`
+      SELECT id, landing_page_slug, cidade, estado, latitude, longitude, visited_at
+      FROM page_visits
+      ORDER BY visited_at DESC
+      LIMIT 50
+    `);
+
+    // Visits without geo
+    const { rows: noGeoRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits WHERE cidade IS NULL');
+
+    res.json({
+      locations,
+      totalVisits: parseInt(totalRows[0].total),
+      recentVisits: recent,
+      visitsWithoutGeo: parseInt(noGeoRows[0].total),
+    });
   } catch (err) { next(err); }
 });
 
