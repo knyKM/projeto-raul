@@ -134,6 +134,8 @@ const SimpleLandingPage = ({ page, slug }: Props) => {
           © {new Date().getFullYear()} Mogibens · Consórcio de Veículos
         </p>
       </motion.div>
+
+      <ExitPopup vehicleName={page.vehicleName} slug={slug} whatsappUrl={whatsappUrl} />
     </div>
   );
 };
