@@ -662,6 +662,10 @@ const DashboardSettings = () => {
               </Card>
             </LockedOverlay>
           </TabsContent>
+
+          <TabsContent value="tabulations">
+            <TabulationsSettings />
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
