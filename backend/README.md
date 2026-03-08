@@ -1,4 +1,4 @@
-# Mogibens API — Backend Node.js/Express
+# sistemaLeads API — Backend Node.js/Express
 
 ## Requisitos
 - Node.js 18+
@@ -36,9 +36,9 @@ npm start               # Produção
 | POST | `/ads/:platform/config` | Salvar credenciais da plataforma |
 | POST | `/ads/:platform/sync` | Sincronizar campanhas e métricas |
 | GET | `/ads/status` | Status de sync de todas as plataformas |
-| GET | `/ads/overview` | KPIs consolidados (channels, daily, campaigns) |
-| GET | `/ads/campaigns` | Listar campanhas (filtro por platform, date) |
-| GET | `/ads/daily/:metric` | Métricas diárias (leads ou spend) |
+| GET | `/ads/overview` | KPIs consolidados |
+| GET | `/ads/campaigns` | Listar campanhas |
+| GET | `/ads/daily/:metric` | Métricas diárias |
 
 ### WhatsApp Business
 | Método | Rota | Descrição |
@@ -46,7 +46,7 @@ npm start               # Produção
 | POST | `/whatsapp/test` | Testar conexão |
 | POST | `/whatsapp/config` | Salvar credenciais |
 | POST | `/whatsapp/send` | Enviar mensagem |
-| GET | `/whatsapp/webhook` | Verificação do webhook Meta |
+| GET | `/whatsapp/webhook` | Verificação do webhook |
 | POST | `/whatsapp/webhook` | Receber mensagens |
 
 ### Google Analytics 4
@@ -64,18 +64,19 @@ backend/
 ├── src/
 │   ├── index.js              # Entry point + middleware
 │   ├── db.js                 # PostgreSQL pool + migrations
+│   ├── license.js            # Geração/validação de licenças HMAC
 │   ├── routes/
 │   │   ├── health.js
 │   │   ├── config.js
-│   │   ├── ads.js            # Unified ads endpoints
+│   │   ├── ads.js
 │   │   ├── whatsapp.js
 │   │   └── analytics.js
 │   ├── services/
-│   │   ├── metaAds.js        # Facebook Marketing API
-│   │   ├── googleAds.js      # Google Ads API
-│   │   └── tiktokAds.js      # TikTok Marketing API
+│   │   ├── metaAds.js
+│   │   ├── googleAds.js
+│   │   └── tiktokAds.js
 │   └── cron/
-│       └── syncAds.js        # Auto-sync every 6h
+│       └── syncAds.js
 ├── .env.example
 ├── package.json
 └── README.md
