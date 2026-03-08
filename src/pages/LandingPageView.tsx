@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/apiClient";
+import { useLandingPageTracking } from "@/hooks/useLandingPageTracking";
 import SimpleLandingPage from "@/components/landing-pages/SimpleLandingPage";
 import DestaqueLandingPage from "@/components/landing-pages/DestaqueLandingPage";
 import ApelativoLandingPage from "@/components/landing-pages/ApelativoLandingPage";
@@ -25,6 +26,7 @@ const LandingPageView = () => {
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
+  const { trackFormStart, trackChatMessage } = useLandingPageTracking(slug);
 
   // Track visit + geolocation on mount
   useEffect(() => {
@@ -96,13 +98,13 @@ const LandingPageView = () => {
 
   // Route to simple template
   if (page.template === "simples") {
-    return <SimpleLandingPage page={page} slug={slug!} />;
+    return <SimpleLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
   if (page.template === "destaque") {
-    return <DestaqueLandingPage page={page} slug={slug!} />;
+    return <DestaqueLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
   if (page.template === "apelativo") {
-    return <ApelativoLandingPage page={page} slug={slug!} />;
+    return <ApelativoLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
 
   // ─── Complete template (original) ─────────────────────────
@@ -278,6 +280,7 @@ const LandingPageView = () => {
               placeholder="Seu nome"
               value={lead.name}
               onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))}
+              onFocus={trackFormStart}
               className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
               maxLength={100}
             />

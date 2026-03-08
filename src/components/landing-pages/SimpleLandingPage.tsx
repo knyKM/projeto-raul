@@ -11,9 +11,11 @@ import ExitPopup from "./ExitPopup";
 interface Props {
   page: LandingPageData;
   slug: string;
+  trackFormStart?: () => void;
+  trackChatMessage?: () => void;
 }
 
-const SimpleLandingPage = ({ page, slug }: Props) => {
+const SimpleLandingPage = ({ page, slug, trackFormStart, trackChatMessage }: Props) => {
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -92,6 +94,7 @@ const SimpleLandingPage = ({ page, slug }: Props) => {
             placeholder="Seu nome"
             value={lead.name}
             onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))}
+            onFocus={trackFormStart}
             className="bg-navy-light/30 border-border/20 text-primary-foreground placeholder:text-gold-light/30"
             maxLength={100}
           />
