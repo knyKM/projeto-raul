@@ -36,7 +36,11 @@ async function sendMessage(to, message) {
   return data.messages?.[0]?.id;
 }
 
-// ─── Conversations CRUD ─────────────────────────────
+// Apply license tier check to all routes EXCEPT webhooks
+router.use((req, res, next) => {
+  if (req.path === '/webhook') return next();
+  return requireTier('whatsapp')(req, res, next);
+});
 
 // GET /whatsapp/conversations
 router.get('/conversations', async (_req, res) => {

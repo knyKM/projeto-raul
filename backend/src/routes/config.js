@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { pool } = require('../db');
+const { invalidateTierCache } = require('../middleware/licenseTier');
 
 const router = Router();
 
