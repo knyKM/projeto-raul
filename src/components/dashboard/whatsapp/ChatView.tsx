@@ -157,6 +157,7 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
                     transition={{ duration: 0.25, delay: msgIdx * 0.05, ease: "easeOut" }}
                     className={cn("flex mb-2", msg.role === "user" ? "justify-start" : "justify-end")}
                   >
+                    <div className={cn("max-w-[60%]", msg.role === "user" ? "pr-4" : "pl-4")}>
                       <div className={cn(
                         "rounded-2xl px-4 py-2.5 text-[13px] font-body leading-relaxed shadow-sm",
                         msg.role === "user"
@@ -201,8 +202,8 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
                           )}
                         </div>
                       </div>
+                    </div>
                   </motion.div>
-                  </div>
                 ))}
               </div>
             ))
