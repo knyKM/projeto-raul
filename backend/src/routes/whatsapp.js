@@ -36,9 +36,9 @@ async function sendMessage(to, message) {
   return data.messages?.[0]?.id;
 }
 
-// Apply license tier check to all routes EXCEPT webhooks
+// Apply license tier check to all routes EXCEPT webhooks and public chat-widget
 router.use((req, res, next) => {
-  if (req.path === '/webhook') return next();
+  if (req.path === '/webhook' || req.path.startsWith('/chat-widget')) return next();
   return requireTier('whatsapp')(req, res, next);
 });
 
