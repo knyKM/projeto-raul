@@ -1,21 +1,23 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog } from "lucide-react";
 import defaultLogo from "@/assets/logo-sistemaleads.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import { getConfig } from "@/lib/configStore";
 import { hasFeature, type Feature } from "@/lib/featureAccess";
+import { useAuth } from "@/lib/authContext";
 
-const navItems: { href: string; label: string; icon: typeof LayoutDashboard; feature?: Feature }[] = [
+const navItems: { href: string; label: string; icon: typeof LayoutDashboard; feature?: Feature; roles?: string[] }[] = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, feature: "dashboard_basic" },
   { href: "/dashboard/leads", label: "Fila de Leads", icon: ClipboardList, feature: "leads_basic" },
   { href: "/dashboard/ads", label: "Central de Ads", icon: Megaphone, feature: "ads_central" },
-  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single" },
+  { href: "/dashboard/landing-pages", label: "Landing Pages", icon: FileText, feature: "landing_pages_single", roles: ["supervisor", "administrador"] },
   { href: "/dashboard/geo", label: "Geolocalização", icon: MapPin, feature: "geo" },
   { href: "/dashboard/atendentes", label: "Atendentes", icon: Users, feature: "atendentes" },
-  { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings" },
+  { href: "/dashboard/users", label: "Usuários", icon: UserCog, roles: ["administrador", "supervisor"] },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings, feature: "settings", roles: ["administrador"] },
 ];
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
