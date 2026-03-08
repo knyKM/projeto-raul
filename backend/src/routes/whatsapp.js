@@ -1,5 +1,5 @@
 /**
- * /whatsapp routes — WhatsApp Business Cloud API + Auto Follow-up
+ * /whatsapp routes — WhatsApp Business Cloud API + Conversations + Follow-up
  */
 const { Router } = require('express');
 const axios = require('axios');
@@ -35,6 +35,122 @@ async function sendMessage(to, message) {
   return data.messages?.[0]?.id;
 }
 
+// ─── Conversations CRUD ─────────────────────────────
+
+// GET /whatsapp/conversations
+router.get('/conversations', async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, lead_id, lead_name, phone, wa_id, status, agent, tabulation,
+              interest, ad_id, unread, last_message, last_message_at,
+              window_expires, started_at
+       FROM wa_conversations
+       ORDER BY last_message_at DESC NULLS LAST`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /whatsapp/conversations/:id/messages
+router.get('/conversations/:id/messages', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, conversation_id, wa_message_id, role, text, status, buttons, timestamp
+       FROM wa_messages
+       WHERE conversation_id = $1
+       ORDER BY timestamp ASC`,
+      [req.params.id]
+    );
+    // Mark conversation as read
+    await pool.query('UPDATE wa_conversations SET unread = 0 WHERE id = $1', [req.params.id]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /whatsapp/conversations/:id/send — send message in conversation
+router.post('/conversations/:id/send', async (req, res) => {
+  const { message } = req.body;
+  const convId = req.params.id;
+
+  try {
+    // Get conversation
+    const { rows: [conv] } = await pool.query(
+      'SELECT phone, wa_id, status FROM wa_conversations WHERE id = $1', [convId]
+    );
+    if (!conv) return res.status(404).json({ error: 'Conversa não encontrada' });
+
+    // Try to send via WhatsApp API
+    let waMessageId = null;
+    try {
+      waMessageId = await sendMessage(conv.phone, message);
+    } catch {
+      // If WA not configured, still store the message
+    }
+
+    // Store message
+    const { rows: [msg] } = await pool.query(
+      `INSERT INTO wa_messages (conversation_id, wa_message_id, role, text, status)
+       VALUES ($1, $2, 'agent', $3, 'sent')
+       RETURNING *`,
+      [convId, waMessageId, message]
+    );
+
+    // Update conversation
+    await pool.query(
+      `UPDATE wa_conversations SET last_message = $1, last_message_at = NOW(), status = 'active' WHERE id = $2`,
+      [message, convId]
+    );
+
+    res.json(msg);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /whatsapp/conversations — create a new conversation manually
+router.post('/conversations', async (req, res) => {
+  const { leadName, phone, waId, agent, interest, adId, leadId } = req.body;
+  try {
+    const { rows: [conv] } = await pool.query(
+      `INSERT INTO wa_conversations (lead_id, lead_name, phone, wa_id, agent, interest, ad_id, status, started_at, last_message_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', NOW(), NOW())
+       RETURNING *`,
+      [leadId || null, leadName, phone, waId || phone.replace(/\D/g, ''), agent || null, interest || null, adId || null]
+    );
+    res.json(conv);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /whatsapp/conversations/:id — update conversation fields
+router.put('/conversations/:id', async (req, res) => {
+  const { status, agent, tabulation, interest } = req.body;
+  try {
+    const sets = [];
+    const vals = [];
+    let idx = 1;
+    if (status) { sets.push(`status = $${idx++}`); vals.push(status); }
+    if (agent !== undefined) { sets.push(`agent = $${idx++}`); vals.push(agent); }
+    if (tabulation !== undefined) { sets.push(`tabulation = $${idx++}`); vals.push(tabulation); }
+    if (interest !== undefined) { sets.push(`interest = $${idx++}`); vals.push(interest); }
+
+    if (sets.length === 0) return res.json({ ok: true });
+
+    vals.push(req.params.id);
+    await pool.query(`UPDATE wa_conversations SET ${sets.join(', ')} WHERE id = $${idx}`, vals);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Original routes ────────────────────────────────
+
 // POST /whatsapp/test
 router.post('/test', async (_req, res) => {
   const { phoneNumberId, token } = getConfig();
@@ -61,7 +177,7 @@ router.post('/config', (req, res) => {
   res.json({ ok: true });
 });
 
-// POST /whatsapp/send — send a text message
+// POST /whatsapp/send — send a text message (standalone, not tied to conversation)
 router.post('/send', async (req, res) => {
   const { to, message } = req.body;
   try {
@@ -72,7 +188,7 @@ router.post('/send', async (req, res) => {
   }
 });
 
-// POST /whatsapp/follow-up — trigger auto follow-up for uncontacted leads
+// POST /whatsapp/follow-up
 router.post('/follow-up', async (req, res) => {
   const { minutesThreshold = 15, messageTemplate } = req.body;
   const { phoneNumberId, token } = getConfig();
@@ -82,7 +198,6 @@ router.post('/follow-up', async (req, res) => {
   }
 
   try {
-    // Find leads that are still "novo" and older than threshold
     const { rows: pendingLeads } = await pool.query(
       `SELECT id, nome, telefone, landing_page_slug
        FROM leads
@@ -118,7 +233,6 @@ router.post('/follow-up', async (req, res) => {
       }
     }
 
-    // Create notification
     if (sentCount > 0) {
       await pool.query(
         `INSERT INTO notifications (title, message, type) VALUES ($1, $2, 'info')`,
@@ -132,7 +246,7 @@ router.post('/follow-up', async (req, res) => {
   }
 });
 
-// GET /whatsapp/follow-up/config — get follow-up settings
+// GET /whatsapp/follow-up/config
 router.get('/follow-up/config', async (_req, res) => {
   try {
     const { rows } = await pool.query(
@@ -144,7 +258,7 @@ router.get('/follow-up/config', async (_req, res) => {
       res.json({
         enabled: false,
         minutesThreshold: 15,
-        messageTemplate: 'Olá {nome}! 👋 Recebemos seu interesse e um consultor entrará em contato em breve. Fique à vontade para nos chamar aqui caso precise de algo!',
+        messageTemplate: 'Olá {nome}! 👋 Recebemos seu interesse e um consultor entrará em contato em breve.',
       });
     }
   } catch {
@@ -152,7 +266,7 @@ router.get('/follow-up/config', async (_req, res) => {
   }
 });
 
-// POST /whatsapp/follow-up/config — save follow-up settings
+// POST /whatsapp/follow-up/config
 router.post('/follow-up/config', async (req, res) => {
   const config = req.body;
   try {
@@ -177,9 +291,69 @@ router.get('/webhook', (req, res) => {
   res.sendStatus(403);
 });
 
-// POST /whatsapp/webhook — incoming messages
-router.post('/webhook', (req, res) => {
+// POST /whatsapp/webhook — incoming messages (stores in DB)
+router.post('/webhook', async (req, res) => {
   console.log('[WhatsApp Webhook]', JSON.stringify(req.body, null, 2));
+
+  try {
+    const entry = req.body?.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+
+    if (value?.messages) {
+      for (const msg of value.messages) {
+        const from = msg.from; // wa_id
+        const text = msg.text?.body || '';
+        const contactName = value.contacts?.[0]?.profile?.name || from;
+
+        // Find or create conversation
+        let { rows: [conv] } = await pool.query(
+          'SELECT id FROM wa_conversations WHERE wa_id = $1 ORDER BY created_at DESC LIMIT 1', [from]
+        );
+
+        if (!conv) {
+          const result = await pool.query(
+            `INSERT INTO wa_conversations (lead_name, phone, wa_id, status, last_message, last_message_at, window_expires)
+             VALUES ($1, $2, $3, 'active', $4, NOW(), NOW() + INTERVAL '24 hours')
+             RETURNING id`,
+            [contactName, from, from, text]
+          );
+          conv = result.rows[0];
+        } else {
+          await pool.query(
+            `UPDATE wa_conversations
+             SET last_message = $1, last_message_at = NOW(), unread = unread + 1,
+                 status = 'active', window_expires = NOW() + INTERVAL '24 hours'
+             WHERE id = $2`,
+            [text, conv.id]
+          );
+        }
+
+        // Store message
+        await pool.query(
+          `INSERT INTO wa_messages (conversation_id, wa_message_id, role, text, status, timestamp)
+           VALUES ($1, $2, 'user', $3, 'read', NOW())`,
+          [conv.id, msg.id, text]
+        );
+      }
+    }
+
+    // Handle status updates
+    if (value?.statuses) {
+      for (const statusUpdate of value.statuses) {
+        const waStatus = statusUpdate.status; // sent, delivered, read
+        if (['sent', 'delivered', 'read'].includes(waStatus)) {
+          await pool.query(
+            'UPDATE wa_messages SET status = $1 WHERE wa_message_id = $2',
+            [waStatus, statusUpdate.id]
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Webhook Error]', err.message);
+  }
+
   res.sendStatus(200);
 });
 

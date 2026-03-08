@@ -1,30 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import WhatsAppConversationList from "@/components/dashboard/whatsapp/ConversationList";
 import WhatsAppChatView from "@/components/dashboard/whatsapp/ChatView";
-import { MessageSquare, Zap, Users, Clock } from "lucide-react";
+import { MessageSquare, Zap, Users, Clock, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/apiClient";
 
 export interface WaConversation {
-  id: string;
-  leadName: string;
+  id: number;
+  lead_id?: number;
+  lead_name: string;
   phone: string;
-  waId: string;
+  wa_id: string;
   status: "active" | "expired" | "pending";
-  lastMessage: string;
-  lastMessageAt: string;
+  last_message: string;
+  last_message_at: string;
   unread: number;
   agent?: string;
   tabulation?: string;
   interest?: string;
-  adId?: string;
-  windowExpires?: string;
-  startedAt: string;
-  avatar?: string;
+  ad_id?: string;
+  window_expires?: string;
+  started_at: string;
 }
 
 export interface WaMessage {
-  id: string;
-  conversationId: string;
+  id: number;
+  conversation_id: number;
+  wa_message_id?: string;
   role: "user" | "bot" | "agent";
   text: string;
   timestamp: string;
@@ -32,98 +35,66 @@ export interface WaMessage {
   buttons?: string[];
 }
 
-const mockConversations: WaConversation[] = [
-  {
-    id: "1", leadName: "João Faria", phone: "(21) 99387-8199", waId: "5521993878199",
-    status: "active", lastMessage: "Sim, começar!", lastMessageAt: "2026-03-08T17:55:00",
-    unread: 1, agent: "Vendedor 6", interest: "BYD_MINI_1280", adId: "6886688494198",
-    windowExpires: "2026-03-09T17:55:31", startedAt: "2026-03-08T17:38:36",
-  },
-  {
-    id: "2", leadName: "Maria Silva", phone: "(11) 98765-4321", waId: "5511987654321",
-    status: "active", lastMessage: "Qual o valor da parcela?", lastMessageAt: "2026-03-08T16:20:00",
-    unread: 0, agent: "Vendedor 3", interest: "CONSORCIO_AUTO",
-    startedAt: "2026-03-08T15:00:00", windowExpires: "2026-03-09T16:20:00",
-  },
-  {
-    id: "3", leadName: "Carlos Mendes", phone: "(31) 99876-5432", waId: "5531998765432",
-    status: "expired", lastMessage: "Vou pensar...", lastMessageAt: "2026-03-07T10:30:00",
-    unread: 0, startedAt: "2026-03-06T09:00:00", windowExpires: "2026-03-07T10:30:00",
-  },
-  {
-    id: "4", leadName: "Ana Beatriz", phone: "(85) 99123-4567", waId: "5585991234567",
-    status: "pending", lastMessage: "Olá, vi o anúncio...", lastMessageAt: "2026-03-08T18:01:00",
-    unread: 2, interest: "TRACKER_2025", startedAt: "2026-03-08T18:01:00",
-  },
-  {
-    id: "5", leadName: "Pedro Almeida", phone: "(47) 99654-3210", waId: "5547996543210",
-    status: "active", lastMessage: "Pode me enviar a tabela?", lastMessageAt: "2026-03-08T14:10:00",
-    unread: 0, agent: "Vendedor 1", interest: "HILUX_SW4",
-    startedAt: "2026-03-08T13:00:00", windowExpires: "2026-03-09T14:10:00",
-  },
-];
-
-const mockMessages: Record<string, WaMessage[]> = {
-  "1": [
-    { id: "m1", conversationId: "1", role: "user", text: "Sim, quero simular!", timestamp: "2026-03-08T17:38:00", status: "read" },
-    { id: "m2", conversationId: "1", role: "bot", text: "Podemos iniciar sua simulação agora?", timestamp: "2026-03-08T17:38:30", status: "delivered", buttons: ["Sim, começar!", "Mais tarde", "Não tenho interesse"] },
-    { id: "m3", conversationId: "1", role: "user", text: "Sim, começar!", timestamp: "2026-03-08T17:55:00", status: "read" },
-  ],
-  "2": [
-    { id: "m4", conversationId: "2", role: "user", text: "Boa tarde, vi o anúncio de vocês", timestamp: "2026-03-08T15:00:00" },
-    { id: "m5", conversationId: "2", role: "bot", text: "Olá! Seja bem-vindo! Como posso ajudar?", timestamp: "2026-03-08T15:00:30" },
-    { id: "m6", conversationId: "2", role: "user", text: "Qual o valor da parcela?", timestamp: "2026-03-08T16:20:00" },
-  ],
-  "3": [
-    { id: "m7", conversationId: "3", role: "bot", text: "Olá Carlos! Tudo bem? Vi que você demonstrou interesse no consórcio.", timestamp: "2026-03-06T09:00:00" },
-    { id: "m8", conversationId: "3", role: "user", text: "Vou pensar...", timestamp: "2026-03-07T10:30:00" },
-  ],
-  "4": [
-    { id: "m9", conversationId: "4", role: "user", text: "Olá, vi o anúncio do Tracker 2025", timestamp: "2026-03-08T18:01:00" },
-    { id: "m10", conversationId: "4", role: "user", text: "Tem disponibilidade?", timestamp: "2026-03-08T18:01:30" },
-  ],
-  "5": [
-    { id: "m11", conversationId: "5", role: "user", text: "Boa tarde!", timestamp: "2026-03-08T13:00:00" },
-    { id: "m12", conversationId: "5", role: "bot", text: "Olá Pedro! Como posso ajudar?", timestamp: "2026-03-08T13:00:30" },
-    { id: "m13", conversationId: "5", role: "user", text: "Pode me enviar a tabela?", timestamp: "2026-03-08T14:10:00" },
-  ],
-};
-
 const DashboardWhatsApp = () => {
-  const [conversations, setConversations] = useState<WaConversation[]>(mockConversations);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<WaConversation[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<WaMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const selected = conversations.find((c) => c.id === selectedId) || null;
   const activeCount = conversations.filter((c) => c.status === "active").length;
   const pendingCount = conversations.filter((c) => c.status === "pending").length;
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unread, 0);
+  const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+
+  const fetchConversations = useCallback(async () => {
+    const res = await api.get<WaConversation[]>("/whatsapp/conversations");
+    if (res.ok && res.data) {
+      setConversations(res.data);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchConversations();
+    // Poll every 10s
+    const interval = setInterval(fetchConversations, 10000);
+    return () => clearInterval(interval);
+  }, [fetchConversations]);
+
+  const fetchMessages = useCallback(async (convId: number) => {
+    setLoadingMessages(true);
+    const res = await api.get<WaMessage[]>(`/whatsapp/conversations/${convId}/messages`);
+    if (res.ok && res.data) {
+      setMessages(res.data);
+      // Mark as read locally
+      setConversations((prev) =>
+        prev.map((c) => (c.id === convId ? { ...c, unread: 0 } : c))
+      );
+    }
+    setLoadingMessages(false);
+  }, []);
 
   useEffect(() => {
     if (selectedId) {
-      setMessages(mockMessages[selectedId] || []);
+      fetchMessages(selectedId);
+      // Poll messages every 5s while conversation is open
+      const interval = setInterval(() => fetchMessages(selectedId), 5000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedId, fetchMessages]);
+
+  const handleSendMessage = async (text: string) => {
+    if (!selectedId) return;
+    const res = await api.post<WaMessage>(`/whatsapp/conversations/${selectedId}/send`, { message: text });
+    if (res.ok && res.data) {
+      setMessages((prev) => [...prev, res.data]);
       setConversations((prev) =>
-        prev.map((c) => (c.id === selectedId ? { ...c, unread: 0 } : c))
+        prev.map((c) =>
+          c.id === selectedId ? { ...c, last_message: text, last_message_at: new Date().toISOString() } : c
+        )
       );
     }
-  }, [selectedId]);
-
-  const handleSendMessage = (text: string) => {
-    if (!selectedId) return;
-    const newMsg: WaMessage = {
-      id: `m-${Date.now()}`,
-      conversationId: selectedId,
-      role: "agent",
-      text,
-      timestamp: new Date().toISOString(),
-      status: "sent",
-    };
-    setMessages((prev) => [...prev, newMsg]);
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === selectedId ? { ...c, lastMessage: text, lastMessageAt: newMsg.timestamp } : c
-      )
-    );
   };
 
   return (
@@ -145,21 +116,23 @@ const DashboardWhatsApp = () => {
             <StatPill icon={Zap} label="Ativas" value={activeCount} accent />
             <StatPill icon={Clock} label="Pendentes" value={pendingCount} />
             <StatPill icon={Users} label="Não lidas" value={totalUnread} />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={fetchConversations}>
+              <RefreshCw className="w-4 h-4 text-muted-foreground" />
+            </Button>
           </div>
         </div>
 
-        {/* Main content — unique split layout */}
+        {/* Main content */}
         <div className="flex-1 flex gap-3 min-h-0">
-          {/* Conversation list with rounded card */}
           <div className="w-80 shrink-0 rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
             <WhatsAppConversationList
               conversations={conversations}
               selectedId={selectedId}
               onSelect={setSelectedId}
+              loading={loading}
             />
           </div>
 
-          {/* Chat area */}
           <div className="flex-1 flex rounded-2xl border border-border bg-card overflow-hidden shadow-sm min-w-0">
             {selected ? (
               <WhatsAppChatView
@@ -167,6 +140,7 @@ const DashboardWhatsApp = () => {
                 messages={messages}
                 onSendMessage={handleSendMessage}
                 onClose={() => setSelectedId(null)}
+                loading={loadingMessages}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -175,8 +149,15 @@ const DashboardWhatsApp = () => {
                     <MessageSquare className="w-8 h-8 text-secondary/50" />
                   </div>
                   <div>
-                    <p className="font-display text-base font-semibold text-foreground/70">Nenhuma conversa selecionada</p>
-                    <p className="font-body text-xs text-muted-foreground mt-1">Escolha um contato à esquerda para iniciar</p>
+                    <p className="font-display text-base font-semibold text-foreground/70">
+                      {loading ? "Carregando..." : conversations.length === 0 ? "Nenhuma conversa ainda" : "Selecione uma conversa"}
+                    </p>
+                    <p className="font-body text-xs text-muted-foreground mt-1">
+                      {conversations.length === 0
+                        ? "As conversas aparecerão quando leads enviarem mensagens"
+                        : "Escolha um contato à esquerda para iniciar"
+                      }
+                    </p>
                   </div>
                 </div>
               </div>

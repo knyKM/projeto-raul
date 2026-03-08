@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
@@ -21,7 +20,7 @@ const QrCodeDialog = ({ open, onOpenChange, conversation }: Props) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
-  const waLink = `https://wa.me/${conversation.waId}`;
+  const waLink = `https://wa.me/${conversation.wa_id || conversation.phone.replace(/\D/g, '')}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(waLink);
@@ -33,7 +32,6 @@ const QrCodeDialog = ({ open, onOpenChange, conversation }: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-0 overflow-hidden">
-        {/* Golden header */}
         <div className="bg-gradient-to-br from-secondary/15 to-secondary/5 px-6 pt-6 pb-4 border-b border-secondary/10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-2xl bg-secondary/15 flex items-center justify-center">
@@ -42,14 +40,13 @@ const QrCodeDialog = ({ open, onOpenChange, conversation }: Props) => {
             <div>
               <DialogTitle className="font-display text-base">Atendimento Exclusivo</DialogTitle>
               <DialogDescription className="font-body text-xs mt-0.5">
-                Escaneie para atender <strong>{conversation.leadName}</strong>
+                Escaneie para atender <strong>{conversation.lead_name || conversation.phone}</strong>
               </DialogDescription>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-5 px-6 py-5">
-          {/* QR Code with decorative frame */}
           <div className="relative">
             <div className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-secondary/10 to-transparent" />
             <div className="relative bg-card p-4 rounded-2xl border border-border shadow-sm">
@@ -63,31 +60,22 @@ const QrCodeDialog = ({ open, onOpenChange, conversation }: Props) => {
             </div>
           </div>
 
-          {/* Contact pill */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-4 py-2 border border-border/50">
             <div className="w-7 h-7 rounded-lg bg-secondary/10 flex items-center justify-center text-[9px] font-display font-bold text-secondary">
-              {conversation.leadName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+              {(conversation.lead_name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <p className="font-body font-semibold text-xs text-foreground">{conversation.leadName}</p>
+              <p className="font-body font-semibold text-xs text-foreground">{conversation.lead_name || conversation.phone}</p>
               <p className="font-mono text-[10px] text-muted-foreground">{conversation.phone}</p>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 w-full">
-            <Button
-              variant="outline"
-              className="flex-1 gap-2 font-body text-xs rounded-xl h-9"
-              onClick={handleCopy}
-            >
+            <Button variant="outline" className="flex-1 gap-2 font-body text-xs rounded-xl h-9" onClick={handleCopy}>
               {copied ? <Check className="w-3.5 h-3.5 text-secondary" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copiado!" : "Copiar link"}
             </Button>
-            <Button
-              className="flex-1 gap-2 font-body text-xs rounded-xl h-9 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-              onClick={() => window.open(waLink, "_blank")}
-            >
+            <Button className="flex-1 gap-2 font-body text-xs rounded-xl h-9 bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={() => window.open(waLink, "_blank")}>
               <ExternalLink className="w-3.5 h-3.5" />
               Abrir WhatsApp
             </Button>

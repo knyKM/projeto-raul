@@ -1,22 +1,20 @@
 import { useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { WaConversation } from "@/pages/production/DashboardWhatsApp";
 
 interface Props {
   conversations: WaConversation[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-}
-
-function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  selectedId: number | null;
+  onSelect: (id: number) => void;
+  loading?: boolean;
 }
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "agora";
   if (mins < 60) return `${mins}min`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h`;
@@ -34,25 +32,24 @@ const avatarGradients = [
   "from-destructive/15 to-destructive/5",
 ];
 
-const statusConfig: Record<string, { dot: string; label: string; ring: string }> = {
-  active: { dot: "bg-secondary", label: "Ativo", ring: "ring-secondary/20" },
-  pending: { dot: "bg-amber-400", label: "Aguardando", ring: "ring-amber-400/20" },
-  expired: { dot: "bg-muted-foreground/30", label: "Expirado", ring: "ring-muted/20" },
+const statusConfig: Record<string, { dot: string; label: string }> = {
+  active: { dot: "bg-secondary", label: "Ativo" },
+  pending: { dot: "bg-amber-400", label: "Aguardando" },
+  expired: { dot: "bg-muted-foreground/30", label: "Expirado" },
 };
 
-const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
+const ConversationList = ({ conversations, selectedId, onSelect, loading }: Props) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "pending" | "expired">("all");
 
   const filtered = conversations.filter((c) => {
     if (filter !== "all" && c.status !== filter) return false;
-    if (search && !c.leadName.toLowerCase().includes(search.toLowerCase()) && !c.phone.includes(search)) return false;
+    if (search && !c.lead_name?.toLowerCase().includes(search.toLowerCase()) && !c.phone?.includes(search)) return false;
     return true;
   });
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with search */}
       <div className="p-3 space-y-2.5">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
@@ -63,8 +60,6 @@ const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
             className="pl-9 h-9 text-xs bg-muted/30 border-0 rounded-xl font-body focus-visible:ring-1 focus-visible:ring-secondary/30"
           />
         </div>
-
-        {/* Segmented filter */}
         <div className="flex bg-muted/40 rounded-xl p-0.5">
           {(["all", "active", "pending", "expired"] as const).map((f) => {
             const count = f === "all" ? conversations.length : conversations.filter((c) => c.status === f).length;
@@ -87,16 +82,21 @@ const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
         </div>
       </div>
 
-      {/* Conversations */}
       <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             <Sparkles className="w-5 h-5 mb-2 opacity-30" />
-            <p className="text-xs font-body">Nenhum resultado</p>
+            <p className="text-xs font-body">
+              {conversations.length === 0 ? "Nenhuma conversa" : "Nenhum resultado"}
+            </p>
           </div>
         ) : (
           filtered.map((conv, i) => {
-            const status = statusConfig[conv.status];
+            const status = statusConfig[conv.status] || statusConfig.pending;
             const isSelected = selectedId === conv.id;
             return (
               <button
@@ -109,14 +109,13 @@ const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
                     : "hover:bg-muted/40"
                 )}
               >
-                {/* Avatar with gradient + status ring */}
                 <div className="relative shrink-0">
                   <div className={cn(
                     "w-11 h-11 rounded-2xl flex items-center justify-center text-[11px] font-display font-bold bg-gradient-to-br",
                     avatarGradients[i % avatarGradients.length],
                     isSelected ? "text-secondary" : "text-foreground/70"
                   )}>
-                    {getInitials(conv.leadName)}
+                    {getInitials(conv.lead_name || "?")}
                   </div>
                   <span className={cn(
                     "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card",
@@ -124,26 +123,26 @@ const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
                   )} />
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-1">
                     <span className={cn(
                       "font-body text-sm truncate",
                       conv.unread > 0 ? "font-bold text-foreground" : "font-medium text-foreground/90"
                     )}>
-                      {conv.leadName}
+                      {conv.lead_name || conv.phone}
                     </span>
-                    <span className="text-[9px] text-muted-foreground/60 font-body shrink-0 tabular-nums">
-                      {timeAgo(conv.lastMessageAt)}
-                    </span>
+                    {conv.last_message_at && (
+                      <span className="text-[9px] text-muted-foreground/60 font-body shrink-0 tabular-nums">
+                        {timeAgo(conv.last_message_at)}
+                      </span>
+                    )}
                   </div>
                   <p className={cn(
                     "text-[11px] font-body truncate mt-0.5",
                     conv.unread > 0 ? "text-foreground/70" : "text-muted-foreground"
                   )}>
-                    {conv.lastMessage}
+                    {conv.last_message || "Sem mensagens"}
                   </p>
-                  {/* Tags row */}
                   <div className="flex items-center gap-1.5 mt-1">
                     {conv.interest && (
                       <span className="text-[8px] uppercase tracking-wider bg-secondary/8 text-secondary border border-secondary/10 px-1.5 py-0.5 rounded-md font-body font-semibold">
@@ -151,14 +150,11 @@ const ConversationList = ({ conversations, selectedId, onSelect }: Props) => {
                       </span>
                     )}
                     {conv.agent && (
-                      <span className="text-[8px] text-muted-foreground/50 font-body">
-                        • {conv.agent}
-                      </span>
+                      <span className="text-[8px] text-muted-foreground/50 font-body">• {conv.agent}</span>
                     )}
                   </div>
                 </div>
 
-                {/* Unread indicator */}
                 {conv.unread > 0 && (
                   <div className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center shrink-0">
                     <span className="text-[9px] font-body font-bold text-secondary-foreground">{conv.unread}</span>
