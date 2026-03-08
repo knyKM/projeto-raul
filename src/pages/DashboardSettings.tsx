@@ -268,6 +268,7 @@ const DashboardSettings = () => {
             <TabsTrigger value="database" className="font-body text-xs"><Database className="w-3.5 h-3.5 mr-1" />Banco de Dados</TabsTrigger>
             <TabsTrigger value="company" className="font-body text-xs"><Building2 className="w-3.5 h-3.5 mr-1" />Empresa</TabsTrigger>
             <TabsTrigger value="notifications" className="font-body text-xs"><Bell className="w-3.5 h-3.5 mr-1" />Notificações</TabsTrigger>
+            <TabsTrigger value="tabulations" className="font-body text-xs"><ListChecks className="w-3.5 h-3.5 mr-1" />Tabulações</TabsTrigger>
           </TabsList>
 
           {/* INTEGRATIONS — now the default tab */}
