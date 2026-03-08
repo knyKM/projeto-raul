@@ -17,6 +17,7 @@
     "facebook-nodejs-business-sdk": "^20.0.3",
     "google-ads-api": "^14.1.1",
     "googleapis": "^140.0.1",
+    "@google-analytics/data": "^4.8.0",
     "axios": "^1.7.7",
     "node-cron": "^3.0.3"
   },
