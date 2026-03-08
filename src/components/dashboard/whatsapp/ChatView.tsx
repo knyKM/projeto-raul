@@ -201,7 +201,7 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
                           )}
                         </div>
                       </div>
-                    </div>
+                  </motion.div>
                   </div>
                 ))}
               </div>
