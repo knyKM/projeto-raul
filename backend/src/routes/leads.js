@@ -128,7 +128,6 @@ router.post('/track-visit', async (req, res, next) => {
 // ─── GET /leads/geo — geo data for dashboard ────────
 router.get('/geo', async (_req, res, next) => {
   try {
-    // Grouped by city
     const { rows: locations } = await pool.query(`
       SELECT cidade, estado, COUNT(*) as total
       FROM page_visits
@@ -138,10 +137,8 @@ router.get('/geo', async (_req, res, next) => {
       LIMIT 50
     `);
 
-    // Total visits
     const { rows: totalRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits');
 
-    // Recent visits (all, including those without city)
     const { rows: recent } = await pool.query(`
       SELECT id, landing_page_slug, cidade, estado, latitude, longitude, visited_at
       FROM page_visits
@@ -149,7 +146,6 @@ router.get('/geo', async (_req, res, next) => {
       LIMIT 50
     `);
 
-    // Visits without geo
     const { rows: noGeoRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits WHERE cidade IS NULL');
 
     res.json({
@@ -158,6 +154,44 @@ router.get('/geo', async (_req, res, next) => {
       recentVisits: recent,
       visitsWithoutGeo: parseInt(noGeoRows[0].total),
     });
+  } catch (err) { next(err); }
+});
+
+// ─── GET /leads/lp-stats — landing page performance ─
+router.get('/lp-stats', async (_req, res, next) => {
+  try {
+    // Visits per LP
+    const { rows: visits } = await pool.query(`
+      SELECT landing_page_slug AS slug, COUNT(*) AS visits
+      FROM page_visits
+      WHERE landing_page_slug IS NOT NULL
+      GROUP BY landing_page_slug
+    `);
+
+    // Leads per LP
+    const { rows: leads } = await pool.query(`
+      SELECT landing_page_slug AS slug, COUNT(*) AS leads
+      FROM leads
+      WHERE landing_page_slug IS NOT NULL
+      GROUP BY landing_page_slug
+    `);
+
+    // Build map
+    const map = {};
+    for (const v of visits) {
+      map[v.slug] = { slug: v.slug, visits: parseInt(v.visits), leads: 0, conversion: 0 };
+    }
+    for (const l of leads) {
+      if (!map[l.slug]) map[l.slug] = { slug: l.slug, visits: 0, leads: 0, conversion: 0 };
+      map[l.slug].leads = parseInt(l.leads);
+    }
+    // Calc conversion
+    for (const key of Object.keys(map)) {
+      const item = map[key];
+      item.conversion = item.visits > 0 ? Math.round((item.leads / item.visits) * 10000) / 100 : 0;
+    }
+
+    res.json(Object.values(map));
   } catch (err) { next(err); }
 });
 
