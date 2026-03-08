@@ -10,6 +10,14 @@ export interface LeadScoreResult {
   reasons: string[];
 }
 
+export interface LeadBehavior {
+  page_views: number;
+  time_on_page_seconds: number;
+  chat_interactions: number;
+  scroll_depth: number;
+  form_started: boolean;
+}
+
 interface LeadForScoring {
   email: string | null;
   origem: string;
@@ -18,54 +26,99 @@ interface LeadForScoring {
   status: string;
 }
 
-export function calculateLeadScore(lead: LeadForScoring): LeadScoreResult {
+export function calculateLeadScore(lead: LeadForScoring, behavior?: LeadBehavior): LeadScoreResult {
   let score = 0;
   const reasons: string[] = [];
 
-  // 1. Has email (+15) — shows higher intent
+  // 1. Has email (+10)
   if (lead.email) {
-    score += 15;
+    score += 10;
     reasons.push('Informou e-mail');
   }
 
   // 2. Origin bonus
   if (lead.origem === 'landing_page') {
-    score += 20;
+    score += 12;
     reasons.push('Via landing page');
   } else if (lead.origem === 'whatsapp') {
-    score += 25;
+    score += 15;
     reasons.push('Via WhatsApp');
   } else if (lead.origem === 'formulario') {
-    score += 15;
+    score += 10;
     reasons.push('Via formulário');
   }
 
-  // 3. Has landing page slug (+10) — came from a specific offer
+  // 3. Has landing page slug (+5)
   if (lead.landing_page_slug) {
-    score += 10;
+    score += 5;
     reasons.push('Oferta específica');
   }
 
-  // 4. Recency bonus — leads that just arrived are hotter
+  // 4. Recency bonus
   const minutesAgo = (Date.now() - new Date(lead.created_at).getTime()) / 60000;
   if (minutesAgo <= 5) {
-    score += 30;
+    score += 20;
     reasons.push('Chegou agora');
   } else if (minutesAgo <= 15) {
-    score += 25;
+    score += 15;
     reasons.push('Menos de 15min');
   } else if (minutesAgo <= 60) {
-    score += 15;
+    score += 10;
     reasons.push('Menos de 1h');
   } else if (minutesAgo <= 360) {
-    score += 5;
+    score += 3;
     reasons.push('Hoje');
   }
 
-  // 5. Still pending bonus (+10) — not yet contacted = opportunity
+  // 5. Still pending bonus (+5)
   if (lead.status === 'novo') {
-    score += 10;
+    score += 5;
     reasons.push('Aguardando contato');
+  }
+
+  // ─── BEHAVIOR SCORING (up to +33 extra points) ───
+  if (behavior) {
+    // Pages visited (+8 max)
+    if (behavior.page_views >= 3) {
+      score += 8;
+      reasons.push(`${behavior.page_views} páginas visitadas`);
+    } else if (behavior.page_views >= 2) {
+      score += 5;
+      reasons.push('2 páginas visitadas');
+    }
+
+    // Time on page (+10 max)
+    if (behavior.time_on_page_seconds >= 120) {
+      score += 10;
+      reasons.push('2+ min na página');
+    } else if (behavior.time_on_page_seconds >= 60) {
+      score += 6;
+      reasons.push('1+ min na página');
+    } else if (behavior.time_on_page_seconds >= 30) {
+      score += 3;
+      reasons.push('30s+ na página');
+    }
+
+    // Chat interactions (+10 max)
+    if (behavior.chat_interactions >= 3) {
+      score += 10;
+      reasons.push(`${behavior.chat_interactions} msgs no chat`);
+    } else if (behavior.chat_interactions >= 1) {
+      score += 6;
+      reasons.push('Interagiu no chat');
+    }
+
+    // Scroll depth (+3)
+    if (behavior.scroll_depth >= 80) {
+      score += 3;
+      reasons.push('Leu a página toda');
+    }
+
+    // Form started (+2)
+    if (behavior.form_started) {
+      score += 2;
+      reasons.push('Iniciou formulário');
+    }
   }
 
   // Clamp
