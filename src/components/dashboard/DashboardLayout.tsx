@@ -50,7 +50,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => {
+          {navItems.filter((item) => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
             const isActive = location.pathname === item.href;
             const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
