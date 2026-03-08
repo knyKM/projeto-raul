@@ -169,11 +169,11 @@ router.get('/geo', async (_req, res, next) => {
 // ─── GET /leads/lp-stats — landing page performance ─
 router.get('/lp-stats', async (_req, res, next) => {
   try {
-    // Visits per LP
+    // Visits per LP — count page_view events from lead_behavior_events
     const { rows: visits } = await pool.query(`
       SELECT landing_page_slug AS slug, COUNT(*) AS visits
-      FROM page_visits
-      WHERE landing_page_slug IS NOT NULL
+      FROM lead_behavior_events
+      WHERE event_type = 'page_view' AND landing_page_slug IS NOT NULL
       GROUP BY landing_page_slug
     `);
 
