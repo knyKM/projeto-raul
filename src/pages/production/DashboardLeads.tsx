@@ -219,7 +219,7 @@ const DashboardLeads = () => {
       <MailingDialog
         open={mailingOpen}
         onOpenChange={setMailingOpen}
-        leadCount={leads.length}
+        leads={leads.map(l => ({ id: l.id, nome: l.nome, telefone: l.telefone }))}
       />
     </DashboardLayout>
   );
