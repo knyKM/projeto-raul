@@ -20,15 +20,38 @@ export interface AppConfig {
   dbPassword: string;
   dbSslEnabled: boolean;
 
-  // Integrations
+  // Meta Ads
   metaAdsToken: string;
-  googleAdsToken: string;
-  tiktokAdsToken: string;
-  googleAnalyticsId: string;
+  metaAdAccountId: string;
+  metaPixelId: string;
+  metaPageId: string;
+  metaAppId: string;
+  metaAppSecret: string;
 
-  // WhatsApp
-  whatsappNumber: string;
-  whatsappApiToken: string;
+  // Google Ads
+  googleAdsDevToken: string;
+  googleAdsClientId: string;
+  googleAdsClientSecret: string;
+  googleAdsRefreshToken: string;
+  googleAdsCustomerId: string;
+  googleAdsManagerId: string;
+
+  // TikTok Ads
+  tiktokAdsToken: string;
+  tiktokAdvertiserId: string;
+  tiktokAppId: string;
+  tiktokAppSecret: string;
+  tiktokPixelId: string;
+
+  // Google Analytics
+  googleAnalyticsMeasurementId: string;
+  googleAnalyticsPropertyId: string;
+
+  // WhatsApp Business
+  whatsappPhoneNumberId: string;
+  whatsappBusinessAccountId: string;
+  whatsappAccessToken: string;
+  whatsappWebhookVerifyToken: string;
 
   // Company
   companyName: string;
@@ -56,11 +79,28 @@ const DEFAULT_CONFIG: AppConfig = {
   dbPassword: '',
   dbSslEnabled: true,
   metaAdsToken: '',
-  googleAdsToken: '',
+  metaAdAccountId: '',
+  metaPixelId: '',
+  metaPageId: '',
+  metaAppId: '',
+  metaAppSecret: '',
+  googleAdsDevToken: '',
+  googleAdsClientId: '',
+  googleAdsClientSecret: '',
+  googleAdsRefreshToken: '',
+  googleAdsCustomerId: '',
+  googleAdsManagerId: '',
   tiktokAdsToken: '',
-  googleAnalyticsId: '',
-  whatsappNumber: '',
-  whatsappApiToken: '',
+  tiktokAdvertiserId: '',
+  tiktokAppId: '',
+  tiktokAppSecret: '',
+  tiktokPixelId: '',
+  googleAnalyticsMeasurementId: '',
+  googleAnalyticsPropertyId: '',
+  whatsappPhoneNumberId: '',
+  whatsappBusinessAccountId: '',
+  whatsappAccessToken: '',
+  whatsappWebhookVerifyToken: '',
   companyName: '',
   companyLogoUrl: '',
   companyPrimaryColor: '#C4A44A',

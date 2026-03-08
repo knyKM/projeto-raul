@@ -243,65 +243,170 @@ const DashboardSettings = () => {
               <LockedOverlay>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Meta Ads (Facebook / Instagram)</CardTitle>
-                    <CardDescription>Token de acesso da API do Meta Business.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Input value={config.metaAdsToken} onChange={(e) => update({ metaAdsToken: e.target.value })} placeholder="EAAxxxxxxx..." className="font-mono text-sm" />
-                  </CardContent>
-                </Card>
-              </LockedOverlay>
-
-              <LockedOverlay>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Google Ads</CardTitle>
-                    <CardDescription>Token ou chave de API do Google Ads.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Input value={config.googleAdsToken} onChange={(e) => update({ googleAdsToken: e.target.value })} placeholder="AIzaSyxxxxxxx..." className="font-mono text-sm" />
-                  </CardContent>
-                </Card>
-              </LockedOverlay>
-
-              <LockedOverlay>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">TikTok Ads</CardTitle>
-                    <CardDescription>Token de acesso da API do TikTok Business.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Input value={config.tiktokAdsToken} onChange={(e) => update({ tiktokAdsToken: e.target.value })} placeholder="Insira o token..." className="font-mono text-sm" />
-                  </CardContent>
-                </Card>
-              </LockedOverlay>
-
-              <LockedOverlay>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Google Analytics</CardTitle>
-                    <CardDescription>ID de medição do GA4.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Input value={config.googleAnalyticsId} onChange={(e) => update({ googleAnalyticsId: e.target.value })} placeholder="G-XXXXXXXXXX" className="font-mono text-sm" />
-                  </CardContent>
-                </Card>
-              </LockedOverlay>
-
-              <LockedOverlay>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">WhatsApp Business</CardTitle>
-                    <CardDescription>Número e token para envio automático.</CardDescription>
+                    <CardTitle className="text-base">📘 Meta Ads (Facebook / Instagram)</CardTitle>
+                    <CardDescription>Configure as credenciais da API do Meta Business para importar campanhas, leads e métricas.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label className="font-body text-sm">Número do WhatsApp</Label>
-                      <Input value={config.whatsappNumber} onChange={(e) => update({ whatsappNumber: e.target.value })} placeholder="+5511999999999" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Access Token</Label>
+                        <Input value={config.metaAdsToken} onChange={(e) => update({ metaAdsToken: e.target.value })} placeholder="EAAxxxxxxx..." className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Ad Account ID</Label>
+                        <Input value={config.metaAdAccountId} onChange={(e) => update({ metaAdAccountId: e.target.value })} placeholder="act_XXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Pixel ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.metaPixelId} onChange={(e) => update({ metaPixelId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Page ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.metaPageId} onChange={(e) => update({ metaPageId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">App ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.metaAppId} onChange={(e) => update({ metaAppId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">App Secret <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input type="password" value={config.metaAppSecret} onChange={(e) => update({ metaAppSecret: e.target.value })} placeholder="••••••••" className="font-mono text-sm" />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="font-body text-sm">Token da API</Label>
-                      <Input value={config.whatsappApiToken} onChange={(e) => update({ whatsappApiToken: e.target.value })} placeholder="Insira o token..." className="font-mono text-sm" />
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
+                      <p>Obtenha o Access Token e Ad Account ID no <a href="https://business.facebook.com/settings" target="_blank" rel="noopener noreferrer" className="underline text-primary">Meta Business Suite</a>. O token deve ter permissões: <code className="bg-muted px-1 rounded">ads_read</code>, <code className="bg-muted px-1 rounded">ads_management</code>, <code className="bg-muted px-1 rounded">leads_retrieval</code>.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </LockedOverlay>
+
+              <LockedOverlay>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">🔍 Google Ads</CardTitle>
+                    <CardDescription>Credenciais OAuth2 e Developer Token para a API do Google Ads.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Developer Token</Label>
+                        <Input value={config.googleAdsDevToken} onChange={(e) => update({ googleAdsDevToken: e.target.value })} placeholder="xxxxxxxxxxxxxxxx" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Customer ID</Label>
+                        <Input value={config.googleAdsCustomerId} onChange={(e) => update({ googleAdsCustomerId: e.target.value })} placeholder="XXX-XXX-XXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">OAuth Client ID</Label>
+                        <Input value={config.googleAdsClientId} onChange={(e) => update({ googleAdsClientId: e.target.value })} placeholder="XXXXX.apps.googleusercontent.com" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">OAuth Client Secret</Label>
+                        <Input type="password" value={config.googleAdsClientSecret} onChange={(e) => update({ googleAdsClientSecret: e.target.value })} placeholder="••••••••" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Refresh Token</Label>
+                        <Input type="password" value={config.googleAdsRefreshToken} onChange={(e) => update({ googleAdsRefreshToken: e.target.value })} placeholder="••••••••" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Manager Account ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.googleAdsManagerId} onChange={(e) => update({ googleAdsManagerId: e.target.value })} placeholder="XXX-XXX-XXXX" className="font-mono text-sm" />
+                      </div>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
+                      <p>Crie as credenciais no <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Cloud Console</a> e obtenha o Developer Token no <a href="https://ads.google.com/aw/apicenter" target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Ads API Center</a>.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </LockedOverlay>
+
+              <LockedOverlay>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">🎵 TikTok Ads</CardTitle>
+                    <CardDescription>Credenciais da API do TikTok for Business.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Access Token</Label>
+                        <Input value={config.tiktokAdsToken} onChange={(e) => update({ tiktokAdsToken: e.target.value })} placeholder="Insira o token..." className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Advertiser ID</Label>
+                        <Input value={config.tiktokAdvertiserId} onChange={(e) => update({ tiktokAdvertiserId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">App ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.tiktokAppId} onChange={(e) => update({ tiktokAppId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">App Secret <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input type="password" value={config.tiktokAppSecret} onChange={(e) => update({ tiktokAppSecret: e.target.value })} placeholder="••••••••" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label className="font-body text-sm">Pixel ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.tiktokPixelId} onChange={(e) => update({ tiktokPixelId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
+                      <p>Obtenha as credenciais no <a href="https://business-api.tiktok.com/portal/docs" target="_blank" rel="noopener noreferrer" className="underline text-primary">TikTok Marketing API Portal</a>.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </LockedOverlay>
+
+              <LockedOverlay>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">📊 Google Analytics 4</CardTitle>
+                    <CardDescription>Conecte o GA4 para rastrear acessos e conversões das landing pages.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Measurement ID</Label>
+                        <Input value={config.googleAnalyticsMeasurementId} onChange={(e) => update({ googleAnalyticsMeasurementId: e.target.value })} placeholder="G-XXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Property ID <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.googleAnalyticsPropertyId} onChange={(e) => update({ googleAnalyticsPropertyId: e.target.value })} placeholder="XXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
+                      <p>Encontre o Measurement ID em <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Analytics</a> → Admin → Data Streams.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </LockedOverlay>
+
+              <LockedOverlay>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">💬 WhatsApp Business API</CardTitle>
+                    <CardDescription>Configure o envio automático de mensagens via WhatsApp Cloud API.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Phone Number ID</Label>
+                        <Input value={config.whatsappPhoneNumberId} onChange={(e) => update({ whatsappPhoneNumberId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Business Account ID</Label>
+                        <Input value={config.whatsappBusinessAccountId} onChange={(e) => update({ whatsappBusinessAccountId: e.target.value })} placeholder="XXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Access Token</Label>
+                        <Input type="password" value={config.whatsappAccessToken} onChange={(e) => update({ whatsappAccessToken: e.target.value })} placeholder="••••••••" className="font-mono text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="font-body text-sm">Webhook Verify Token <span className="text-muted-foreground">(opcional)</span></Label>
+                        <Input value={config.whatsappWebhookVerifyToken} onChange={(e) => update({ whatsappWebhookVerifyToken: e.target.value })} placeholder="seu_token_verificacao" className="font-mono text-sm" />
+                      </div>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
+                      <p>Configure no <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener noreferrer" className="underline text-primary">Meta for Developers</a> → seu App → WhatsApp → API Setup.</p>
                     </div>
                   </CardContent>
                 </Card>
