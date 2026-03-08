@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <a href="#">
-            <img src={logo} alt="Mogibens Consórcios" className="h-12 w-auto rounded-md" />
+            <img src={logo} alt="sistemaLeads" className="h-12 w-auto rounded-md" />
           </a>
           <div className="flex items-center gap-6 text-sm font-body text-gold-light/40">
             <a href="#beneficios" className="hover:text-gold transition-colors">Benefícios</a>
