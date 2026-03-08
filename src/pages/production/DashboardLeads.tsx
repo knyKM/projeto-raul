@@ -128,6 +128,11 @@ const DashboardLeads = () => {
               </button>
             </div>
 
+            <Button variant="outline" size="sm" className="gap-2 font-body" onClick={() => setRemarketingOpen(true)}>
+              <Target className="w-4 h-4" />
+              Remarketing
+            </Button>
+
             {canExportMailing ? (
               <Button variant="gold" size="sm" className="gap-2 font-body" onClick={() => setMailingOpen(true)}>
                 <PhoneOutgoing className="w-4 h-4" />
