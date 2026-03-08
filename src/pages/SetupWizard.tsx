@@ -214,7 +214,7 @@ const SetupWizard = () => {
                 <Label htmlFor="companyName" className="font-body">Nome da Empresa</Label>
                 <Input
                   id="companyName"
-                  placeholder="Ex: Mogibens Consórcios"
+                  placeholder="Ex: Minha Empresa"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                 />
