@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,17 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Check, ChevronRight, ChevronLeft, Database, Key, Rocket, Shield, Crown, Star, Zap, Server, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Check, ChevronRight, ChevronLeft, Database, Key, Rocket, Shield, Crown, Star, Zap,
+  Server, Loader2, CheckCircle2, XCircle, Building2, Upload, ImageIcon,
+} from "lucide-react";
 import { saveConfig, LicenseTier, TIER_FEATURES, getConfig } from "@/lib/configStore";
 import { setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-mogibens.png";
 
 const steps = [
-  { id: 1, title: "Licença", icon: Key },
-  { id: 2, title: "API Backend", icon: Server },
-  { id: 3, title: "Banco de Dados", icon: Database },
-  { id: 4, title: "Finalizar", icon: Rocket },
+  { id: 1, title: "Empresa", icon: Building2 },
+  { id: 2, title: "Licença", icon: Key },
+  { id: 3, title: "API Backend", icon: Server },
+  { id: 4, title: "Banco de Dados", icon: Database },
+  { id: 5, title: "Finalizar", icon: Rocket },
 ];
 
 const tierIcons: Record<LicenseTier, typeof Star> = {
@@ -31,17 +35,22 @@ const SetupWizard = () => {
   const navigate = useNavigate();
   const existing = getConfig();
   const [step, setStep] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Step 1 — License
+  // Step 1 — Company
+  const [companyName, setCompanyName] = useState(existing.companyName || "");
+  const [companyLogoPreview, setCompanyLogoPreview] = useState(existing.companyLogoUrl || "");
+
+  // Step 2 — License
   const [selectedTier, setSelectedTier] = useState<LicenseTier>(existing.licenseTier || "free");
   const [licenseKey, setLicenseKey] = useState(existing.licenseKey || "");
 
-  // Step 2 — API URL
+  // Step 3 — API URL
   const [apiUrl, setApiUrlState] = useState(existing.apiUrl || "http://localhost:3001");
   const [apiStatus, setApiStatus] = useState<TestStatus>('idle');
   const [apiError, setApiError] = useState('');
 
-  // Step 3 — Database
+  // Step 4 — Database
   const [dbHost, setDbHost] = useState(existing.dbHost || "");
   const [dbPort, setDbPort] = useState(existing.dbPort || "5432");
   const [dbName, setDbName] = useState(existing.dbName || "");
@@ -51,9 +60,45 @@ const SetupWizard = () => {
   const [dbStatus, setDbStatus] = useState<TestStatus>('idle');
   const [dbError, setDbError] = useState('');
 
-  const canProceedStep1 = selectedTier === "free" || licenseKey.trim().length >= 8;
-  const canProceedStep2 = apiUrl.trim() !== "" && apiStatus === 'success';
-  const canProceedStep3 = dbHost.trim() !== "" && dbName.trim() !== "" && dbUser.trim() !== "";
+  const canProceedStep1 = companyName.trim().length >= 2;
+  const canProceedStep2 = selectedTier === "free" || licenseKey.trim().length >= 8;
+  const canProceedStep3 = apiUrl.trim() !== "" && apiStatus === 'success';
+  const canProceedStep4 = dbHost.trim() !== "" && dbName.trim() !== "" && dbUser.trim() !== "";
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Max 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize to max 200x200 for sidebar
+        const canvas = document.createElement("canvas");
+        const maxSize = 200;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSize || h > maxSize) {
+          const ratio = Math.min(maxSize / w, maxSize / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/png", 0.9);
+        setCompanyLogoPreview(dataUrl);
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleTestApi = async () => {
     setApiStatus('testing');
@@ -89,6 +134,8 @@ const SetupWizard = () => {
 
   const handleFinish = () => {
     saveConfig({
+      companyName,
+      companyLogoUrl: companyLogoPreview,
       apiUrl,
       licenseTier: selectedTier,
       licenseKey,
@@ -127,12 +174,12 @@ const SetupWizard = () => {
       </div>
 
       {/* Stepper */}
-      <div className="flex items-center gap-2 mb-8">
+      <div className="flex items-center gap-1 sm:gap-2 mb-8 flex-wrap justify-center">
         {steps.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2">
+          <div key={s.id} className="flex items-center gap-1 sm:gap-2">
             <div
               className={cn(
-                "flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold transition-colors",
+                "flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-xs sm:text-sm font-semibold transition-colors",
                 step >= s.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground"
@@ -140,18 +187,116 @@ const SetupWizard = () => {
             >
               {step > s.id ? <Check className="w-4 h-4" /> : s.id}
             </div>
-            <span className={cn("text-sm font-body hidden sm:inline", step >= s.id ? "text-foreground" : "text-muted-foreground")}>
+            <span className={cn("text-xs sm:text-sm font-body hidden sm:inline", step >= s.id ? "text-foreground" : "text-muted-foreground")}>
               {s.title}
             </span>
-            {i < steps.length - 1 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+            {i < steps.length - 1 && <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />}
           </div>
         ))}
       </div>
 
       {/* Content */}
       <div className="w-full max-w-4xl">
-        {/* STEP 1 — License */}
+        {/* STEP 1 — Company */}
         {step === 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-secondary" />
+                Dados da Empresa
+              </CardTitle>
+              <CardDescription>
+                Configure o nome e logo que aparecerão no painel administrativo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="companyName" className="font-body">Nome da Empresa</Label>
+                <Input
+                  id="companyName"
+                  placeholder="Ex: Mogibens Consórcios"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="font-body">Logo da Empresa</Label>
+                <p className="text-xs text-muted-foreground font-body">
+                  Envie uma imagem (PNG, JPG). Ela será redimensionada automaticamente para a sidebar.
+                </p>
+
+                <div className="flex items-center gap-6">
+                  {/* Preview */}
+                  <div className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50 overflow-hidden shrink-0">
+                    {companyLogoPreview ? (
+                      <img
+                        src={companyLogoPreview}
+                        alt="Logo preview"
+                        className="w-full h-full object-contain p-1"
+                      />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-body gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4" />
+                      {companyLogoPreview ? "Trocar Logo" : "Enviar Logo"}
+                    </Button>
+                    {companyLogoPreview && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="font-body text-xs text-muted-foreground"
+                        onClick={() => setCompanyLogoPreview("")}
+                      >
+                        Remover
+                      </Button>
+                    )}
+                    <p className="text-[10px] text-muted-foreground font-body">Máx. 5MB · Redimensionada para 200×200px</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar preview */}
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-xs text-muted-foreground font-body mb-3">📱 Preview da Sidebar</p>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border max-w-xs">
+                  <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                    {companyLogoPreview ? (
+                      <img src={companyLogoPreview} alt="Logo" className="w-full h-full object-contain" />
+                    ) : (
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-display text-sm font-semibold text-foreground">
+                      {companyName || "Nome da Empresa"}
+                    </p>
+                    <p className="text-xs text-muted-foreground font-body">Painel Administrativo</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 2 — License */}
+        {step === 2 && (
           <div className="space-y-6">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-display font-bold text-foreground">Escolha seu plano</h2>
@@ -232,8 +377,8 @@ const SetupWizard = () => {
           </div>
         )}
 
-        {/* STEP 2 — API Backend */}
-        {step === 2 && (
+        {/* STEP 3 — API Backend */}
+        {step === 3 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -241,7 +386,7 @@ const SetupWizard = () => {
                 Servidor da API (Backend)
               </CardTitle>
               <CardDescription>
-                Informe a URL da sua API Node.js que conecta ao banco de dados. Todas as configurações serão persistidas através dela.
+                Informe a URL da sua API Node.js que conecta ao banco de dados.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -272,27 +417,21 @@ const SetupWizard = () => {
 
               <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body space-y-2">
                 <p className="font-medium text-foreground">💡 Como funciona</p>
-                <p>O frontend (este painel) se comunica com uma API Node.js via HTTP. A API é responsável por:</p>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>Conectar e persistir dados no PostgreSQL</li>
-                  <li>Gerenciar configurações, leads, métricas de ads</li>
-                  <li>Integrar com Meta Ads, Google Ads, TikTok Ads, WhatsApp</li>
-                </ul>
-                <p className="mt-2">A API deve responder em <code className="bg-muted px-1 rounded">GET /health</code> com <code className="bg-muted px-1 rounded">{`{"status":"ok"}`}</code>.</p>
+                <p>O frontend se comunica com uma API Node.js via HTTP. A API deve responder em <code className="bg-muted px-1 rounded">GET /health</code> com <code className="bg-muted px-1 rounded">{`{"status":"ok"}`}</code>.</p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* STEP 3 — Database */}
-        {step === 3 && (
+        {/* STEP 4 — Database */}
+        {step === 4 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-secondary" />
                 Conexão com o Banco de Dados
               </CardTitle>
-              <CardDescription>Informe os dados de acesso ao seu servidor PostgreSQL. A API usará essas credenciais.</CardDescription>
+              <CardDescription>Informe os dados de acesso ao seu servidor PostgreSQL.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -332,17 +471,12 @@ const SetupWizard = () => {
                 Testar Conexão
               </Button>
               <StatusIcon status={dbStatus} error={dbError} />
-
-              <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
-                <p className="font-medium text-foreground mb-1">💡 Dica</p>
-                <p>Certifique-se de que o PostgreSQL aceita conexões do host onde a API está rodando e que o usuário tenha permissões adequadas.</p>
-              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* STEP 4 — Summary */}
-        {step === 4 && (
+        {/* STEP 5 — Summary */}
+        {step === 5 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -353,15 +487,18 @@ const SetupWizard = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                  <p className="text-xs text-muted-foreground font-body">Empresa</p>
+                  <div className="flex items-center gap-3">
+                    {companyLogoPreview && (
+                      <img src={companyLogoPreview} alt="Logo" className="w-8 h-8 rounded object-contain" />
+                    )}
+                    <p className="font-semibold text-foreground">{companyName}</p>
+                  </div>
+                </div>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-1">
                   <p className="text-xs text-muted-foreground font-body">Plano</p>
                   <p className="font-semibold text-foreground">{TIER_FEATURES[selectedTier].name} — {TIER_FEATURES[selectedTier].price}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-4 space-y-1">
-                  <p className="text-xs text-muted-foreground font-body">Licença</p>
-                  <p className="font-semibold text-foreground font-mono text-sm">
-                    {selectedTier === "free" ? "Não necessária" : licenseKey || "—"}
-                  </p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-1">
                   <p className="text-xs text-muted-foreground font-body">API Backend</p>
@@ -373,7 +510,7 @@ const SetupWizard = () => {
                 </div>
               </div>
               <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground font-body">
-                <p>Após a ativação, todas as configurações serão persistidas no banco de dados via API. Você poderá gerenciar integrações, tokens e parâmetros na seção <strong>Configurações</strong> do painel.</p>
+                <p>Após a ativação, todas as configurações serão persistidas no banco de dados via API. Você poderá alterar tudo na seção <strong>Configurações</strong> do painel.</p>
               </div>
             </CardContent>
           </Card>
@@ -390,13 +527,14 @@ const SetupWizard = () => {
             <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
           </Button>
 
-          {step < 4 ? (
+          {step < 5 ? (
             <Button
               onClick={() => setStep((s) => s + 1)}
               disabled={
                 (step === 1 && !canProceedStep1) ||
                 (step === 2 && !canProceedStep2) ||
-                (step === 3 && !canProceedStep3)
+                (step === 3 && !canProceedStep3) ||
+                (step === 4 && !canProceedStep4)
               }
               className="font-body"
             >
