@@ -106,6 +106,28 @@ Popup inteligente exibido quando o visitante tenta sair da landing page:
 
 ---
 
+## 🎯 Remarketing List
+
+Exportação de leads frios para criação de audiências customizadas:
+
+- **Filtros:** leads não fechados, nunca contatados, ou marcados como perdidos
+- **Período:** configurável (ex: sem atividade há mais de 7 dias)
+- **Formatos de exportação:**
+  - Meta Ads (Custom Audience) — email, phone, fn
+  - Google Ads (Customer Match) — Email, Phone, First Name, Last Name
+  - CSV genérico
+- Contador de leads em tempo real conforme filtros
+
+---
+
+## 📱 Follow-up Automático via WhatsApp
+
+- Envio automático de mensagem para leads pendentes após X minutos
+- Template personalizável com variáveis `{nome}` e `{veiculo}`
+- Limite de 50 leads por execução
+- Notificação automática ao enviar follow-ups
+- Configuração de tempo mínimo e mensagem via painel
+
 ## 📞 Integração com Discador 3CPlus
 
 ### Montar Mailing
