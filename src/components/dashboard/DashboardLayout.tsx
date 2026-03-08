@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings } from "lucide-react";
-import logo from "@/assets/logo-mogibens.png";
+import { Link, useLocation, Navigate } from "react-router-dom";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Building2 } from "lucide-react";
+import defaultLogo from "@/assets/logo-mogibens.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
+import { getConfig } from "@/lib/configStore";
 
 const navItems = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
@@ -18,6 +19,15 @@ const navItems = [
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
+  const config = getConfig();
+
+  // Redirect to setup if not completed
+  if (!config.setupCompleted) {
+    return <Navigate to="/setup" replace />;
+  }
+
+  const logoSrc = config.companyLogoUrl || defaultLogo;
+  const companyName = config.companyName || "Mogibens";
 
   return (
     <div className="min-h-screen flex bg-muted/40 max-w-[100vw] overflow-x-hidden">
@@ -25,9 +35,15 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       <aside className="hidden md:flex w-64 flex-col bg-card border-r border-border">
         <div className="p-4 border-b border-border">
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="Mogibens" className="h-9 w-auto rounded-md" />
+            <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+              {config.companyLogoUrl ? (
+                <img src={logoSrc} alt={companyName} className="w-full h-full object-contain" />
+              ) : (
+                <img src={defaultLogo} alt="Mogibens" className="w-full h-full object-contain" />
+              )}
+            </div>
             <div>
-              <p className="font-display text-sm font-semibold text-foreground">Mogibens</p>
+              <p className="font-display text-sm font-semibold text-foreground truncate max-w-[160px]">{companyName}</p>
               <p className="text-xs text-muted-foreground font-body">Painel Administrativo</p>
             </div>
           </Link>
@@ -74,8 +90,10 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         {/* Top bar mobile */}
         <header className="md:hidden flex items-center justify-between px-4 h-14 bg-card border-b border-border">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="Mogibens" className="h-8 w-auto rounded-md" />
-            <span className="font-display text-sm font-semibold text-foreground">Painel</span>
+            <div className="w-8 h-8 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+              <img src={logoSrc} alt={companyName} className="w-full h-full object-contain" />
+            </div>
+            <span className="font-display text-sm font-semibold text-foreground truncate max-w-[120px]">{companyName}</span>
           </Link>
           <div className="flex items-center gap-1">
             <NotificationBell />
