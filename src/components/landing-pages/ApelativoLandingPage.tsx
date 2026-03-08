@@ -15,6 +15,8 @@ import ChatWidget from "./ChatWidget";
 interface Props {
   page: LandingPageData;
   slug: string;
+  trackFormStart?: () => void;
+  trackChatMessage?: () => void;
 }
 
 const fadeUp = {
@@ -22,7 +24,7 @@ const fadeUp = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6 } }),
 };
 
-const ApelativoLandingPage = ({ page, slug }: Props) => {
+const ApelativoLandingPage = ({ page, slug, trackFormStart, trackChatMessage }: Props) => {
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);

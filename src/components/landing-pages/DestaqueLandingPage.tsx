@@ -12,9 +12,11 @@ import ChatWidget from "./ChatWidget";
 interface Props {
   page: LandingPageData;
   slug: string;
+  trackFormStart?: () => void;
+  trackChatMessage?: () => void;
 }
 
-const DestaqueLandingPage = ({ page, slug }: Props) => {
+const DestaqueLandingPage = ({ page, slug, trackFormStart, trackChatMessage }: Props) => {
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
