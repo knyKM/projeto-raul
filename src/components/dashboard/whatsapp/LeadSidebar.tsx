@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { QrCode, Clock, User, Tag, Megaphone, ShieldCheck, Timer } from "lucide-react";
+import { QrCode, Clock, Tag, ShieldCheck, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WaConversation } from "@/pages/production/DashboardWhatsApp";
 
@@ -34,8 +34,8 @@ const statusConfig: Record<string, { label: string; className: string; icon: str
 };
 
 const LeadSidebar = ({ conversation, onShowQr }: Props) => {
-  const status = statusConfig[conversation.status];
-  const windowRemaining = getWindowRemaining(conversation.windowExpires);
+  const status = statusConfig[conversation.status] || statusConfig.pending;
+  const windowRemaining = getWindowRemaining(conversation.window_expires);
 
   return (
     <div className="w-[280px] border-l border-border bg-card overflow-y-auto shrink-0 hidden lg:flex flex-col">
@@ -43,10 +43,10 @@ const LeadSidebar = ({ conversation, onShowQr }: Props) => {
       <div className="p-5 text-center border-b border-border bg-gradient-to-b from-secondary/5 to-transparent">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-3 border border-secondary/10">
           <span className="text-lg font-display font-bold text-secondary">
-            {conversation.leadName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+            {(conversation.lead_name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
           </span>
         </div>
-        <h3 className="font-display font-bold text-base text-foreground">{conversation.leadName}</h3>
+        <h3 className="font-display font-bold text-base text-foreground">{conversation.lead_name || conversation.phone}</h3>
         <p className="text-xs text-muted-foreground font-body mt-0.5">{conversation.phone}</p>
         <div className="mt-2">
           <Badge variant="outline" className={cn("text-[10px] font-body", status.className)}>
@@ -57,10 +57,9 @@ const LeadSidebar = ({ conversation, onShowQr }: Props) => {
 
       {/* Info sections */}
       <div className="flex-1 p-4 space-y-4">
-        {/* Session info */}
         <SidebarSection title="Sessão" icon={Clock}>
-          <InfoRow label="Início" value={formatDate(conversation.startedAt)} />
-          <InfoRow label="Expira" value={formatDate(conversation.windowExpires)} />
+          <InfoRow label="Início" value={formatDate(conversation.started_at)} />
+          <InfoRow label="Expira" value={formatDate(conversation.window_expires)} />
           {windowRemaining && (
             <div className="flex items-center gap-1.5 mt-1">
               <Timer className="w-3 h-3 text-secondary" />
@@ -76,23 +75,21 @@ const LeadSidebar = ({ conversation, onShowQr }: Props) => {
 
         <Separator />
 
-        {/* Lead context */}
         <SidebarSection title="Contexto" icon={Tag}>
           <InfoRow label="Agente" value={conversation.agent || "Não atribuído"} />
           <InfoRow label="Tabulação" value={conversation.tabulation || "—"} />
           <InfoRow label="Interesse" value={conversation.interest || "—"} highlight />
-          <InfoRow label="Ad ID" value={conversation.adId || "—"} mono />
+          <InfoRow label="Ad ID" value={conversation.ad_id || "—"} mono />
         </SidebarSection>
 
         <Separator />
 
-        {/* WhatsApp ID */}
         <SidebarSection title="Identificação" icon={ShieldCheck}>
-          <InfoRow label="WA ID" value={conversation.waId} mono />
+          <InfoRow label="WA ID" value={conversation.wa_id || "—"} mono />
         </SidebarSection>
       </div>
 
-      {/* QR Code action — sticky bottom */}
+      {/* QR Code action */}
       <div className="p-4 border-t border-border bg-gradient-to-t from-secondary/3 to-transparent">
         <Button
           className="w-full gap-2 font-body text-xs bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-xl h-10 shadow-sm"
@@ -115,7 +112,7 @@ const SidebarSection = ({ title, icon: Icon, children }: { title: string; icon: 
       <Icon className="w-3.5 h-3.5 text-secondary/70" />
       <h4 className="text-[11px] font-body font-bold uppercase tracking-widest text-muted-foreground">{title}</h4>
     </div>
-    <div className="space-y-2 pl-5.5">{children}</div>
+    <div className="space-y-2 pl-5">{children}</div>
   </div>
 );
 

@@ -121,7 +121,43 @@ async function initTables() {
       ativo BOOLEAN DEFAULT true,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS wa_conversations (
+      id SERIAL PRIMARY KEY,
+      lead_id INT REFERENCES leads(id) ON DELETE SET NULL,
+      lead_name TEXT,
+      phone VARCHAR(30) NOT NULL,
+      wa_id VARCHAR(30),
+      status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'expired')),
+      agent VARCHAR(100),
+      tabulation VARCHAR(100),
+      interest VARCHAR(255),
+      ad_id VARCHAR(100),
+      unread INT DEFAULT 0,
+      last_message TEXT,
+      last_message_at TIMESTAMPTZ,
+      window_expires TIMESTAMPTZ,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS wa_messages (
+      id SERIAL PRIMARY KEY,
+      conversation_id INT REFERENCES wa_conversations(id) ON DELETE CASCADE NOT NULL,
+      wa_message_id VARCHAR(255),
+      role VARCHAR(10) NOT NULL CHECK (role IN ('user', 'bot', 'agent')),
+      text TEXT NOT NULL,
+      status VARCHAR(15) DEFAULT 'sent' CHECK (status IN ('sent', 'delivered', 'read')),
+      buttons JSONB,
+      timestamp TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS app_config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
+
 
   // Add landing_page_slug column if it doesn't exist (migration for existing DBs)
   await pool.query(`
