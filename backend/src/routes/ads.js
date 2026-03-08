@@ -6,8 +6,12 @@ const { pool } = require('../db');
 const metaAds = require('../services/metaAds');
 const googleAds = require('../services/googleAds');
 const tiktokAds = require('../services/tiktokAds');
+const { requireTier } = require('../middleware/licenseTier');
 
 const router = Router();
+
+// All ads routes require Pro tier
+router.use(requireTier('ads_central'));
 
 const services = { meta: metaAds, google: googleAds, tiktok: tiktokAds };
 

@@ -4,6 +4,7 @@
 const { Router } = require('express');
 const axios = require('axios');
 const { pool } = require('../db');
+const { requireTier } = require('../middleware/licenseTier');
 
 const router = Router();
 

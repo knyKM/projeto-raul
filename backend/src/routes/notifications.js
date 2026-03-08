@@ -3,8 +3,12 @@
  */
 const { Router } = require('express');
 const { pool } = require('../db');
+const { requireTier } = require('../middleware/licenseTier');
 
 const router = Router();
+
+// Email notifications require Pro tier
+router.use(requireTier('notifications_email'));
 
 // ─── GET /notifications — list recent ───────────────
 router.get('/', async (req, res, next) => {
