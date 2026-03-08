@@ -71,7 +71,16 @@ const DashboardLandingPages = () => {
     setDialogOpen(true);
   };
 
-  const templateLabel = (t: string) => t === 'simples' ? 'Simples' : 'Completa';
+  const templateLabel = (t: string) => {
+    if (t === 'simples') return 'Simples';
+    if (t === 'destaque') return 'Destaque';
+    return 'Completa';
+  };
+  const templateIcon = (t: string) => {
+    if (t === 'simples') return <Zap className="w-3 h-3 mr-1" />;
+    if (t === 'destaque') return <Star className="w-3 h-3 mr-1" />;
+    return <FileText className="w-3 h-3 mr-1" />;
+  };
 
   return (
     <DashboardLayout>
