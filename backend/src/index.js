@@ -36,6 +36,7 @@ app.use('/leads', leadsRouter);
 app.use('/atendentes', atendentesRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/overview', overviewRouter);
+app.use('/auth', authRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
