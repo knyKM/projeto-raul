@@ -45,12 +45,12 @@ const QrCodeDialog = ({ open, onOpenChange, conversation }: Props) => {
         <div className="flex flex-col items-center gap-4 py-4">
           {/* QR Code */}
           <div className="bg-white p-4 rounded-xl shadow-sm">
-            <QRCodeSVG
-              value={waLink}
-              size={200}
-              level="H"
-              includeMargin={false}
-              fgColor="#1a1a2e"
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(waLink)}`}
+              alt="QR Code"
+              width={200}
+              height={200}
+              className="rounded"
             />
           </div>
 
