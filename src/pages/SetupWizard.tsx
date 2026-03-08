@@ -166,9 +166,9 @@ const SetupWizard = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <img src={logo} alt="Mogibens" className="h-10 w-auto rounded-md" />
+        <img src={logo} alt="sistemaLeads" className="h-10 w-auto rounded-md" />
         <div>
-          <h1 className="font-display text-xl font-bold text-foreground">Mogibens</h1>
+          <h1 className="font-display text-xl font-bold text-foreground">sistemaLeads</h1>
           <p className="text-xs text-muted-foreground font-body">Configuração Inicial</p>
         </div>
       </div>
