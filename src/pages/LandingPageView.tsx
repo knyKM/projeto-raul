@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/apiClient";
+import SimpleLandingPage from "@/components/landing-pages/SimpleLandingPage";
 
 const benefits = [
   { icon: Shield, title: "100% Seguro", desc: "Regulamentado pelo Banco Central" },
@@ -32,7 +33,6 @@ const LandingPageView = () => {
       let longitude: number | undefined;
 
       try {
-        // 1. Try IP-based geolocation first (no permission needed, always works)
         const ipRes = await fetch('https://ipapi.co/json/');
         if (ipRes.ok) {
           const ipData = await ipRes.json();
@@ -43,7 +43,6 @@ const LandingPageView = () => {
         }
       } catch { /* silent */ }
 
-      // 2. Try browser geolocation for more precision (user may deny)
       if (navigator.geolocation) {
         try {
           const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -52,7 +51,6 @@ const LandingPageView = () => {
           latitude = pos.coords.latitude;
           longitude = pos.coords.longitude;
 
-          // Reverse geocode with precise coords
           try {
             const geoRes = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`,
@@ -64,7 +62,7 @@ const LandingPageView = () => {
               estado = geoData?.address?.state_code?.toUpperCase() || geoData?.address?.state?.substring(0, 2)?.toUpperCase() || estado;
             }
           } catch { /* keep IP-based data */ }
-        } catch { /* denied or timeout - keep IP-based data */ }
+        } catch { /* denied or timeout */ }
       }
 
       try {
@@ -92,6 +90,12 @@ const LandingPageView = () => {
     );
   }
 
+  // Route to simple template
+  if (page.template === "simples") {
+    return <SimpleLandingPage page={page} slug={slug!} />;
+  }
+
+  // ─── Complete template (original) ─────────────────────────
   const whatsappUrl = `https://wa.me/${page.whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no consórcio do ${page.vehicleName}. Pode me ajudar?`)}`;
 
   const handleSubmitLead = async (e: React.FormEvent) => {
