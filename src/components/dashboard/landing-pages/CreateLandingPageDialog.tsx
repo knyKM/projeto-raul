@@ -101,7 +101,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
           {/* Template selector */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Modelo da Página</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <TemplateCard
                 selected={form.template === "completa"}
                 onClick={() => update("template", "completa")}
@@ -115,6 +115,13 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
                 icon={<Zap className="w-5 h-5" />}
                 title="Simples"
                 desc="Valor, imagem e formulário direto"
+              />
+              <TemplateCard
+                selected={form.template === "destaque"}
+                onClick={() => update("template", "destaque")}
+                icon={<Star className="w-5 h-5" />}
+                title="Destaque"
+                desc="Split-screen, features e chat widget"
               />
             </div>
           </div>
