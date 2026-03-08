@@ -187,11 +187,16 @@ const DashboardReports = () => {
 
   const fetchData = async (from?: Date, to?: Date) => {
     setLoading(true);
-    const startDate = from ? format(from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
-    const endDate = to ? format(to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
-    const res = await api.get<ReportData>(`/reports?startDate=${startDate}&endDate=${endDate}`);
-    if (res.ok && res.data) setData(res.data);
-    setLoading(false);
+    try {
+      const startDate = from ? format(from, 'yyyy-MM-dd') : format(subDays(new Date(), 30), 'yyyy-MM-dd');
+      const endDate = to ? format(to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+      const res = await api.get<ReportData>(`/reports?startDate=${startDate}&endDate=${endDate}`);
+      if (res.ok && res.data) setData(res.data);
+    } catch (err) {
+      console.error('[Reports] fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(dateRange?.from, dateRange?.to); }, []);
