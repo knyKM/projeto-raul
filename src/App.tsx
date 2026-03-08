@@ -21,6 +21,7 @@ import DashboardLandingPages from "./pages/DashboardLandingPages";
 import DashboardUsers from "./pages/production/DashboardUsers";
 import DashboardReports from "./pages/production/DashboardReports";
 import DashboardWhatsApp from "./pages/production/DashboardWhatsApp";
+import DashboardConsultant from "./pages/production/DashboardConsultant";
 
 // Test pages (with mock data for demo/testing)
 import TestOverview from "./pages/DashboardOverview";
@@ -58,6 +59,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/users" element={<ProtectedRoute roles={["administrador", "supervisor"]}><DashboardUsers /></ProtectedRoute>} />
     <Route path="/dashboard/reports" element={<ProtectedRoute><DashboardReports /></ProtectedRoute>} />
     <Route path="/dashboard/whatsapp" element={<ProtectedRoute><DashboardWhatsApp /></ProtectedRoute>} />
+    <Route path="/dashboard/consultant" element={<ProtectedRoute><DashboardConsultant /></ProtectedRoute>} />
     <Route path="/dashboard/settings" element={<ProtectedRoute roles={["administrador"]}><DashboardSettings /></ProtectedRoute>} />
 
     {/* Test routes (mock data for demo) */}

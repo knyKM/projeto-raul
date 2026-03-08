@@ -168,6 +168,28 @@ async function initTables() {
     END $$;
   `).catch(() => {});
 
+  // Lead behavior events table for intelligent scoring
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS lead_behavior_events (
+      id SERIAL PRIMARY KEY,
+      session_id VARCHAR(255) NOT NULL,
+      event_type VARCHAR(50) NOT NULL,
+      landing_page_slug VARCHAR(255),
+      metadata JSONB DEFAULT '{}',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_behavior_session ON lead_behavior_events(session_id);
+  `).catch(() => {});
+
+  // Add updated_at to leads if missing
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'updated_at') THEN
+        ALTER TABLE leads ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+      END IF;
+    END $$;
+  `).catch(() => {});
+
   console.log('✅ Database tables initialized');
 }
 
