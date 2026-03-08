@@ -203,6 +203,12 @@ const DashboardLeads = () => {
         onOpenChange={setMailingOpen}
         leads={leads.map(l => ({ id: l.id, nome: l.nome, telefone: l.telefone }))}
       />
+
+      <RemarketingDialog
+        open={remarketingOpen}
+        onOpenChange={setRemarketingOpen}
+        leads={leads.map(l => ({ id: l.id, nome: l.nome, telefone: l.telefone, email: l.email, status: l.status, created_at: l.created_at }))}
+      />
     </DashboardLayout>
   );
 };
