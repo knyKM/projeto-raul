@@ -113,7 +113,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
         {/* Mobile nav */}
         <nav className="md:hidden flex items-center gap-1 px-4 py-2 bg-card border-b border-border overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-          {navItems.map((item) => {
+          {navItems.filter((item) => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
             const isActive = location.pathname === item.href;
             const isLocked = item.feature ? !hasFeature(item.feature) : false;
             return (
