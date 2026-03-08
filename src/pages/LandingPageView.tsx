@@ -98,13 +98,13 @@ const LandingPageView = () => {
 
   // Route to simple template
   if (page.template === "simples") {
-    return <SimpleLandingPage page={page} slug={slug!} />;
+    return <SimpleLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
   if (page.template === "destaque") {
-    return <DestaqueLandingPage page={page} slug={slug!} />;
+    return <DestaqueLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
   if (page.template === "apelativo") {
-    return <ApelativoLandingPage page={page} slug={slug!} />;
+    return <ApelativoLandingPage page={page} slug={slug!} trackFormStart={trackFormStart} trackChatMessage={trackChatMessage} />;
   }
 
   // ─── Complete template (original) ─────────────────────────
