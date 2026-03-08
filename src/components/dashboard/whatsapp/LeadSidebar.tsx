@@ -38,7 +38,7 @@ const LeadSidebar = ({ conversation, onShowQr }: Props) => {
   const windowRemaining = getWindowRemaining(conversation.window_expires);
 
   return (
-    <div className="w-[280px] border-l border-border bg-card overflow-y-auto shrink-0 hidden lg:flex flex-col">
+    <div className="w-[280px] border-l border-border bg-card overflow-y-auto shrink-0 flex flex-col">
       {/* Profile header */}
       <div className="p-5 text-center border-b border-border bg-gradient-to-b from-secondary/5 to-transparent">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-3 border border-secondary/10">

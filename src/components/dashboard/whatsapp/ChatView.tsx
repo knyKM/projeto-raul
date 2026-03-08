@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, Smile, Paperclip, Mic, QrCode, PanelRightClose, PanelRightOpen, Bot, UserCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -85,7 +86,13 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
 
   return (
     <>
-      <div className="flex-1 flex flex-col min-w-0">
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="flex-1 flex flex-col min-w-0"
+        key={conversation.id}
+      >
         {/* Header */}
         <div className="relative px-5 py-3 bg-card border-b border-border">
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-secondary/30 to-transparent" />
@@ -142,9 +149,15 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
                   </span>
                 </div>
 
-                {group.msgs.map((msg) => (
-                  <div key={msg.id} className={cn("flex mb-2", msg.role === "user" ? "justify-start" : "justify-end")}>
-                    <div className={cn("max-w-[60%] relative", msg.role === "user" ? "pr-4" : "pl-4")}>
+                {group.msgs.map((msg, msgIdx) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.25, delay: msgIdx * 0.05, ease: "easeOut" }}
+                    className={cn("flex mb-2", msg.role === "user" ? "justify-start" : "justify-end")}
+                  >
+                    <div className={cn("max-w-[60%]", msg.role === "user" ? "pr-4" : "pl-4")}>
                       <div className={cn(
                         "rounded-2xl px-4 py-2.5 text-[13px] font-body leading-relaxed shadow-sm",
                         msg.role === "user"
@@ -190,7 +203,7 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             ))
@@ -236,9 +249,21 @@ const ChatView = ({ conversation, messages, onSendMessage, onClose, loading }: P
             )}
           </form>
         </div>
-      </div>
+      </motion.div>
 
-      {showSidebar && <LeadSidebar conversation={conversation} onShowQr={() => setShowQr(true)} />}
+      <AnimatePresence>
+        {showSidebar && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 280, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden shrink-0 hidden lg:block"
+          >
+            <LeadSidebar conversation={conversation} onShowQr={() => setShowQr(true)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <QrCodeDialog open={showQr} onOpenChange={setShowQr} conversation={conversation} />
     </>
   );
