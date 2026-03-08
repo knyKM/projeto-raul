@@ -16,6 +16,7 @@ const atendentesRouter = require('./routes/atendentes');
 const notificationsRouter = require('./routes/notifications');
 const overviewRouter = require('./routes/overview');
 const authRouter = require('./routes/auth');
+const mailingRouter = require('./routes/mailing');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
