@@ -83,7 +83,7 @@ router.get('/scores', async (_req, res, next) => {
       GROUP BY l.id
     `);
 
-    const scores: Record<number, any> = {};
+    const scores = {};
     for (const row of rows) {
       scores[row.lead_id] = {
         page_views: parseInt(row.page_views),
