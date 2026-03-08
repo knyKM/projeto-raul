@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 const SetupWizard = () => {
   const navigate = useNavigate();
   const existing = getConfig();
+  const alreadyCompleted = existing.setupCompleted;
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -161,6 +162,11 @@ const SetupWizard = () => {
       {status === 'error' && <span className="text-xs text-destructive font-body">{error}</span>}
     </div>
   );
+
+  // If setup already completed, redirect to dashboard
+  if (alreadyCompleted) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
