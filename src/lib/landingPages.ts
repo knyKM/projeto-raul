@@ -1,6 +1,9 @@
+export type LandingPageTemplate = 'completa' | 'simples';
+
 export interface LandingPageData {
   id: string;
   slug: string;
+  template: LandingPageTemplate;
   vehicleName: string;
   brand: string;
   model: string;
@@ -19,7 +22,10 @@ const STORAGE_KEY = "sistemaleads_landing_pages";
 
 export function getLandingPages(): LandingPageData[] {
   const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
+  if (!data) return [];
+  // Migrate old pages without template field
+  const pages = JSON.parse(data) as LandingPageData[];
+  return pages.map(p => ({ ...p, template: p.template || 'completa' }));
 }
 
 export function getLandingPageBySlug(slug: string): LandingPageData | undefined {

@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { saveLandingPage, generateSlug, type LandingPageData } from "@/lib/landingPages";
+import { saveLandingPage, generateSlug, type LandingPageData, type LandingPageTemplate } from "@/lib/landingPages";
 import { useToast } from "@/hooks/use-toast";
+import { FileText, Zap } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const defaults: Omit<LandingPageData, "id" | "slug" | "createdAt"> = {
+  template: "completa",
   vehicleName: "",
   brand: "",
   model: "",
@@ -36,6 +38,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
   useEffect(() => {
     if (editingPage) {
       setForm({
+        template: editingPage.template || "completa",
         vehicleName: editingPage.vehicleName,
         brand: editingPage.brand,
         model: editingPage.model,
@@ -62,7 +65,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
   }, [form.creditValue, form.installments]);
 
   const handleSave = () => {
-    if (!form.vehicleName || !form.brand || !form.model || form.creditValue <= 0) {
+    if (!form.brand || !form.model || form.creditValue <= 0) {
       toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
       return;
     }
@@ -84,16 +87,38 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
   };
 
   const update = (field: string, value: string | number) => setForm((f) => ({ ...f, [field]: value }));
+  const isSimples = form.template === "simples";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">{editingPage ? "Editar" : "Nova"} Landing Page</DialogTitle>
-          <DialogDescription>Configure o veículo e a página será gerada automaticamente.</DialogDescription>
+          <DialogDescription>Configure o veículo e escolha o modelo da página.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
+          {/* Template selector */}
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">Modelo da Página</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <TemplateCard
+                selected={form.template === "completa"}
+                onClick={() => update("template", "completa")}
+                icon={<FileText className="w-5 h-5" />}
+                title="Completa"
+                desc="Hero, simulador, benefícios e formulário"
+              />
+              <TemplateCard
+                selected={form.template === "simples"}
+                onClick={() => update("template", "simples")}
+                icon={<Zap className="w-5 h-5" />}
+                title="Simples"
+                desc="Valor, imagem e formulário direto"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Marca *</Label>
@@ -141,15 +166,20 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs">Descrição</Label>
-            <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Descreva o veículo e o consórcio..." rows={3} />
-          </div>
+          {/* Fields only for "completa" template */}
+          {!isSimples && (
+            <>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Descrição</Label>
+                <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Descreva o veículo e o consórcio..." rows={3} />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs">Destaques (um por linha)</Label>
-            <Textarea value={highlightsText} onChange={(e) => setHighlightsText(e.target.value)} placeholder={"Sem juros\nSem entrada obrigatória\nParcelas que cabem no bolso"} rows={3} />
-          </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Destaques (um por linha)</Label>
+                <Textarea value={highlightsText} onChange={(e) => setHighlightsText(e.target.value)} placeholder={"Sem juros\nSem entrada obrigatória\nParcelas que cabem no bolso"} rows={3} />
+              </div>
+            </>
+          )}
 
           <div className="space-y-1.5">
             <Label className="text-xs">WhatsApp (com DDI+DDD)</Label>
@@ -165,5 +195,29 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
     </Dialog>
   );
 };
+
+interface TemplateCardProps {
+  selected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
+const TemplateCard = ({ selected, onClick, icon, title, desc }: TemplateCardProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-center ${
+      selected
+        ? "border-primary bg-primary/5 text-primary"
+        : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
+    }`}
+  >
+    {icon}
+    <span className="text-xs font-semibold font-body">{title}</span>
+    <span className="text-[10px] font-body leading-tight opacity-70">{desc}</span>
+  </button>
+);
 
 export default CreateLandingPageDialog;
