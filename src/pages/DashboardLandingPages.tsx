@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ExternalLink, Trash2, Copy, FileText, Eye, Users, TrendingUp, Zap, Loader2 } from "lucide-react";
+import { Plus, ExternalLink, Trash2, Copy, FileText, Eye, Users, TrendingUp, Zap, Loader2, Star } from "lucide-react";
 import { getLandingPages, deleteLandingPage, type LandingPageData } from "@/lib/landingPages";
 import CreateLandingPageDialog from "@/components/dashboard/landing-pages/CreateLandingPageDialog";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
