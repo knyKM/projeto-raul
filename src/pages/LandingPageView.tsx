@@ -97,6 +97,9 @@ const LandingPageView = () => {
   if (page.template === "simples") {
     return <SimpleLandingPage page={page} slug={slug!} />;
   }
+  if (page.template === "destaque") {
+    return <DestaqueLandingPage page={page} slug={slug!} />;
+  }
 
   // ─── Complete template (original) ─────────────────────────
   const whatsappUrl = `https://wa.me/${page.whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no consórcio do ${page.vehicleName}. Pode me ajudar?`)}`;
