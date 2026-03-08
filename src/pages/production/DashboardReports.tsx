@@ -177,6 +177,7 @@ const presets = [
 ];
 
 const DashboardReports = () => {
+  console.log('[DashboardReports] Component mounted');
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [preset, setPreset] = useState('30d');
