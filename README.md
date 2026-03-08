@@ -308,6 +308,94 @@ Acesse `http://seudominio.com/projeto-raul/` no navegador.
 
 ---
 
+## 🖥️ Configuração Alternativa para WSL (Windows Subsystem for Linux)
+
+Se você está rodando o projeto no WSL ao invés de um servidor Linux dedicado, siga estas instruções adicionais:
+
+### 1. Configurar o arquivo hosts do Windows
+
+Como o domínio não está registrado publicamente (ou você quer testar localmente), adicione-o ao arquivo hosts do **Windows**:
+
+1. Abra o **Bloco de Notas como Administrador**
+2. Abra o arquivo `C:\Windows\System32\drivers\etc\hosts`
+3. Adicione ao final:
+
+```
+127.0.0.1  sistemaleadsraul.com
+127.0.0.1  www.sistemaleadsraul.com
+```
+
+> **Dica:** Substitua pelo seu domínio desejado. Isso faz o Windows resolver o domínio para o localhost.
+
+### 2. Nginx no WSL — usar `localhost` como alternativa
+
+Se preferir acessar sem domínio customizado, use `server_name localhost _`:
+
+```nginx
+server {
+    listen 80 default_server;
+    server_name localhost _;
+
+    # ... restante da config igual ...
+}
+```
+
+Assim você acessa diretamente via `http://localhost/projeto-raul/`.
+
+### 3. Verificar se o Nginx está acessível do Windows
+
+```bash
+# No WSL, verificar se o Nginx está rodando:
+sudo systemctl status nginx
+
+# Testar localmente no WSL:
+curl http://localhost/projeto-raul/
+
+# Se não funcionar, reinicie:
+sudo systemctl restart nginx
+```
+
+### 4. Diferenças entre WSL e Linux dedicado
+
+| Item | Linux dedicado | WSL |
+|------|---------------|-----|
+| Acesso externo | IP público + DNS | Apenas local (localhost) |
+| SSL/HTTPS | Certbot funciona | Não recomendado (use HTTP) |
+| Firewall (UFW) | Necessário | Não necessário |
+| PM2 startup | Funciona com systemd | Pode precisar iniciar manualmente |
+| Hosts file | Não necessário (DNS resolve) | Editar `C:\Windows\System32\drivers\etc\hosts` |
+| Portas | Expostas diretamente | WSL 2 faz port-forwarding automático |
+
+### 5. Iniciar serviços manualmente no WSL
+
+O WSL nem sempre executa serviços automaticamente no boot. Crie um script de inicialização:
+
+```bash
+# Criar script ~/start-sistemaleads.sh
+cat << 'EOF' > ~/start-sistemaleads.sh
+#!/bin/bash
+sudo service nginx start
+sudo service postgresql start
+cd /var/www/sistemaleads/backend && pm2 start src/index.js --name sistemaleads-api 2>/dev/null || pm2 restart sistemaleads-api
+echo "✅ sistemaLeads iniciado! Acesse http://localhost/projeto-raul/"
+EOF
+chmod +x ~/start-sistemaleads.sh
+```
+
+Execute sempre que abrir o WSL:
+
+```bash
+~/start-sistemaleads.sh
+```
+
+### 6. Para produção real
+
+Se quiser expor o WSL para a internet (não recomendado para produção):
+- Use um túnel como [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) ou [ngrok](https://ngrok.com/)
+- Ou migre para um VPS (DigitalOcean, Contabo, etc.) seguindo as instruções padrão deste README
+
+---
+
 ## 🔒 SSL com Certbot (HTTPS)
 
 ### 1. Instalar Certbot
