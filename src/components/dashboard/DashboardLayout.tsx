@@ -75,17 +75,23 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </nav>
 
         <div className="p-3 border-t border-border space-y-1">
+          {user && (
+            <div className="px-3 py-2 mb-1">
+              <p className="text-xs font-body font-medium text-foreground truncate">{user.nome}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+            </div>
+          )}
           <div className="flex items-center justify-between px-3 py-1">
             <NotificationBell />
             <ThemeToggle />
           </div>
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          <button
+            onClick={() => { logout(); window.location.hash = '#/login'; }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-muted hover:text-foreground transition-colors w-full"
           >
             <LogOut className="w-4 h-4" />
-            Voltar ao Site
-          </Link>
+            Sair
+          </button>
         </div>
       </aside>
 
