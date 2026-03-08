@@ -17,6 +17,7 @@ const notificationsRouter = require('./routes/notifications');
 const overviewRouter = require('./routes/overview');
 const authRouter = require('./routes/auth');
 const mailingRouter = require('./routes/mailing');
+const reportsRouter = require('./routes/reports');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -39,6 +40,7 @@ app.use('/notifications', notificationsRouter);
 app.use('/overview', overviewRouter);
 app.use('/auth', authRouter);
 app.use('/mailing', mailingRouter);
+app.use('/reports', reportsRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
