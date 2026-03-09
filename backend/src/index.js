@@ -60,6 +60,7 @@ app.use('/mailing', mailingRouter);
 app.use('/reports', reportsRouter);
 app.use('/lead-tracking', leadTrackingRouter);
 app.use('/consultant', consultantRouter);
+app.use('/landing-pages', landingPagesRouter);
 
 // ─── Error handler ──────────────────────────────────
 app.use((err, _req, res, _next) => {
