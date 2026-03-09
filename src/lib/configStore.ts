@@ -195,7 +195,13 @@ export async function syncConfigFromApi(): Promise<AppConfig> {
 }
 
 export function resetConfig(): void {
+  // Preserve API URL when resetting config
+  const apiUrl = localStorage.getItem('mogibens_api_url');
   localStorage.removeItem(STORAGE_KEY);
+  // Re-set API URL so the system stays connected
+  if (apiUrl) {
+    localStorage.setItem('mogibens_api_url', apiUrl);
+  }
 }
 
 export const TIER_FEATURES: Record<LicenseTier, {
