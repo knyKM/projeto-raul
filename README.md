@@ -656,6 +656,8 @@ cd .. && npm install && npm run build
 sudo cp -r dist/* /var/www/html/projeto-raul/
 ```
 
+> **Nota:** Se for a primeira vez com PM2, use: `pm2 start src/index.js --name sistemaleads-api -r dotenv/config`
+
 ### Backup do banco
 
 ```bash
