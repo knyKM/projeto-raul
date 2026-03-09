@@ -257,13 +257,3 @@ Exportação de leads frios para criação de audiências customizadas:
 ---
 
 *Última atualização: Março 2026*
-
-- **Frontend:** React + TypeScript + Tailwind CSS + shadcn/ui
-- **Backend:** Node.js/Express + PostgreSQL
-- **Mapas:** Leaflet + React-Leaflet
-- **Gráficos:** Recharts
-- **Animações:** Framer Motion
-
----
-
-*Última atualização: Março 2026*
