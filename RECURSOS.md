@@ -4,6 +4,84 @@ Documentação dos recursos disponíveis na plataforma, focada em **atendimento,
 
 ---
 
+## 🖥️ Painéis do Dashboard
+
+### Visão Geral (`/dashboard`)
+Página inicial com indicadores consolidados:
+- Acessos do dia, leads captados e taxa de conversão
+- Leads pendentes aguardando contato
+- Gráfico de leads diários (últimos 30 dias)
+- Ranking de landing pages por volume de leads
+
+### Fila de Leads (`/dashboard/leads`)
+Gestão completa de leads captados:
+- Visualização em **Lista** ou **Kanban** (drag-and-drop)
+- Filtros por status, origem (landing page) e atendente
+- Lead scoring automático com classificação quente/morno/frio
+- Timer de primeiro atendimento com alertas visuais
+- Ações rápidas: atribuir, alterar status, visualizar detalhes
+
+### Central de Ads (`/dashboard/ads`)
+Monitoramento de campanhas de mídia paga:
+- Integração com Meta Ads, Google Ads e TikTok Ads
+- KPIs: investimento, leads, CPL por plataforma
+- Ranking de campanhas por performance
+- Gráficos de gastos e leads por período
+
+### Landing Pages (`/dashboard/landing-pages`)
+Gerenciamento de páginas de captura:
+- Criar, editar e excluir landing pages
+- Três templates: Completa, Simples e Destaque
+- Métricas por página: visitas, leads, conversão
+- Acesso restrito a supervisores e administradores
+
+### Geolocalização (`/dashboard/geo`)
+Análise geográfica de acessos:
+- Mapa interativo com pontos de acesso
+- Ranking de cidades e estados
+- Total de visitas rastreadas
+
+### WhatsApp (`/dashboard/whatsapp`)
+Central de atendimento via WhatsApp:
+- Lista de conversas ativas
+- Chat integrado com envio de mensagens
+- Sidebar com dados do lead
+- Conexão via QR Code
+
+### Meu Painel (`/dashboard/consultant`)
+Painel individual do consultor:
+- Leads atribuídos ao usuário logado
+- Métricas pessoais de atendimento
+- Histórico de atividades
+
+### Relatórios (`/dashboard/reports`)
+Relatórios analíticos:
+- Performance por período
+- Comparativos de conversão
+- Exportação de dados
+
+### Atendentes (`/dashboard/atendentes`)
+Gestão da equipe de atendimento:
+- Cadastro de consultores/atendentes
+- Visualização de carga de trabalho
+- Atribuição de leads
+
+### Usuários (`/dashboard/users`)
+Administração de usuários do sistema:
+- Criar, editar e desativar usuários
+- Definição de papéis (administrador, supervisor, consultor)
+- Acesso restrito a administradores e supervisores
+
+### Configurações (`/dashboard/settings`)
+Configurações gerais da plataforma:
+- Dados da empresa (nome, logo, WhatsApp)
+- Chave de licença e plano ativo
+- Integrações (API URL, Google Analytics, WhatsApp Business)
+- Tabulações personalizadas para status de leads
+- Acesso restrito a administradores
+
+---
+
 ## 🎯 Captação de Leads
 
 ### Landing Pages Dinâmicas
