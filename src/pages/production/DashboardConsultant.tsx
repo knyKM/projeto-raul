@@ -80,15 +80,16 @@ const DashboardConsultant = () => {
   useEffect(() => {
     // Load consultores list for admin/supervisor to pick
     api.get<Array<{ id: number; nome: string }>>('/atendentes').then(res => {
-      if (res.ok && res.data) {
+      if (res.ok && res.data && res.data.length > 0) {
         setConsultores(res.data);
         // Auto-select first or match by user name
-        if (res.data.length > 0) {
-          const match = res.data.find(c => c.nome.toLowerCase() === user?.nome?.toLowerCase());
-          setSelectedConsultorId(match?.id || res.data[0].id);
-        }
+        const match = res.data.find(c => c.nome.toLowerCase() === user?.nome?.toLowerCase());
+        setSelectedConsultorId(match?.id || res.data[0].id);
+      } else {
+        // No consultores — stop loading
+        setLoading(false);
       }
-    });
+    }).catch(() => setLoading(false));
     // Load ranking
     api.get<RankingEntry[]>('/consultant/ranking/all').then(res => {
       if (res.ok && res.data) setRanking(res.data);
@@ -104,11 +105,27 @@ const DashboardConsultant = () => {
     });
   }, [selectedConsultorId]);
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!data) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center py-32 gap-4">
+          <Users className="w-12 h-12 text-muted-foreground" />
+          <div className="text-center">
+            <h2 className="font-display text-lg font-bold text-foreground">Nenhum consultor cadastrado</h2>
+            <p className="text-sm text-muted-foreground font-body mt-1">
+              Cadastre atendentes em <strong>Atendentes</strong> para usar o painel de consultor.
+            </p>
+          </div>
         </div>
       </DashboardLayout>
     );
