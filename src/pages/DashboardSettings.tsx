@@ -71,19 +71,35 @@ const DashboardSettings = () => {
     // Validate license key if present
     let updatedConfig = { ...config };
     if (config.licenseKey) {
+      console.log('[License] Validando chave:', config.licenseKey);
       const res = await validateLicense(config.licenseKey);
+      console.log('[License] Resposta da API:', JSON.stringify(res));
+      
       if (res.ok && res.data) {
-        updatedConfig.licenseTier = (res.data.tier as LicenseTier) || 'free';
+        const tier = res.data.tier as LicenseTier;
+        console.log('[License] Tier recebido:', tier, 'Valid:', res.data.valid);
+        updatedConfig.licenseTier = tier || 'free';
         updatedConfig.licenseActivated = res.data.valid;
         if (!res.data.valid) {
           toast({ title: "Chave inválida", description: "A chave de licença não foi reconhecida.", variant: "destructive" });
+        } else {
+          toast({ title: "Licença ativada!", description: `Plano ${TIER_FEATURES[tier].name} ativado com sucesso.`, variant: "default" });
         }
+      } else {
+        // API call failed - show error but keep the key, user may need to fix API URL
+        console.error('[License] Falha na validação:', res.error);
+        toast({ 
+          title: "Erro na validação", 
+          description: res.error || "Não foi possível validar a licença. Verifique a URL da API.", 
+          variant: "destructive" 
+        });
       }
     } else {
       updatedConfig.licenseTier = 'free';
       updatedConfig.licenseActivated = false;
     }
 
+    console.log('[License] Config final:', { tier: updatedConfig.licenseTier, activated: updatedConfig.licenseActivated });
     setConfig(updatedConfig);
     saveConfig(updatedConfig);
     setLoading(false);
