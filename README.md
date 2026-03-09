@@ -349,20 +349,52 @@ Acesse via `http://localhost/projeto-raul/`.
 
 | Item | Linux dedicado | WSL |
 |------|---------------|-----|
-| Acesso externo | IP público + DNS | Apenas local (localhost) |
+| Acesso externo | IP público + DNS | Via IP do Windows + port forwarding |
 | SSL/HTTPS | Certbot funciona | Não recomendado (use HTTP) |
 | Firewall (UFW) | Necessário | Não necessário |
 | PM2 startup | Funciona com systemd | Pode precisar iniciar manualmente |
 | Hosts file | Não necessário (DNS resolve) | Editar `C:\Windows\System32\drivers\etc\hosts` |
 
-### 4. Script de inicialização para WSL
+### 4. Acessar de outra máquina na rede (WSL)
+
+O IP da WSL é interno e **não acessível** de outras máquinas. Use o IP do **Windows** com port forwarding:
+
+1. **Descubra o IP do Windows** (PowerShell):
+   ```powershell
+   ipconfig
+   ```
+   Anote o `IPv4 Address` (ex: `192.168.1.50`).
+
+2. **Configure port forwarding** (PowerShell como **Administrador**):
+   ```powershell
+   netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=localhost
+   ```
+
+3. **Libere no Firewall do Windows** (PowerShell como **Administrador**):
+   ```powershell
+   netsh advfirewall firewall add rule name="Nginx WSL" dir=in action=allow protocol=tcp localport=80
+   ```
+
+4. **Atualize o CORS** no `backend/.env`:
+   ```env
+   CORS_ORIGIN=http://localhost,http://192.168.1.50
+   ```
+
+5. **Reinicie o backend:**
+   ```bash
+   pm2 restart sistemaleads-api
+   ```
+
+6. Acesse de outra máquina: `http://192.168.1.50/projeto-raul/`
+
+### 5. Script de inicialização para WSL
 
 ```bash
 cat << 'EOF' > ~/start-sistemaleads.sh
 #!/bin/bash
 sudo service nginx start
 sudo service postgresql start
-cd /var/www/sistemaleads/backend && pm2 start src/index.js --name sistemaleads-api 2>/dev/null || pm2 restart sistemaleads-api
+cd /var/www/sistemaleads/backend && pm2 start src/index.js --name sistemaleads-api -r dotenv/config 2>/dev/null || pm2 restart sistemaleads-api
 echo "✅ sistemaLeads iniciado! Acesse http://localhost/projeto-raul/"
 EOF
 chmod +x ~/start-sistemaleads.sh
