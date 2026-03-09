@@ -20,6 +20,7 @@ const mailingRouter = require('./routes/mailing');
 const reportsRouter = require('./routes/reports');
 const leadTrackingRouter = require('./routes/leadTracking');
 const consultantRouter = require('./routes/consultant');
+const landingPagesRouter = require('./routes/landingPages');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
