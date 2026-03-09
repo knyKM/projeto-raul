@@ -1,26 +1,44 @@
 // API Client for communicating with the Node.js backend
-// The API URL is stored in localStorage since it's needed BEFORE connecting to the DB
 
 const API_URL_KEY = 'mogibens_api_url';
 
+/**
+ * Auto-detect API URL based on current domain.
+ * Production (Nginx): API proxied at /api on same origin.
+ * Development (Vite): localhost:3001.
+ */
+function detectApiUrl(): string {
+  const { hostname, protocol } = window.location;
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3001';
+  }
+
+  // Production: always /api on the same origin
+  return `${protocol}//${hostname}/api`;
+}
+
 export function getApiUrl(): string {
+  // 1. Explicit override
   const direct = localStorage.getItem(API_URL_KEY);
   if (direct) return direct;
-  
-  // Fallback: read from config store (survives if only mogibens_api_url was cleared)
+
+  // 2. From config store
   try {
     const configRaw = localStorage.getItem('mogibens_config');
     if (configRaw) {
       const config = JSON.parse(configRaw);
       if (config.apiUrl) {
-        // Re-persist to dedicated key for next time
         localStorage.setItem(API_URL_KEY, config.apiUrl.replace(/\/+$/, ''));
         return config.apiUrl;
       }
     }
   } catch {}
-  
-  return '';
+
+  // 3. Auto-detect — never returns empty
+  const detected = detectApiUrl();
+  localStorage.setItem(API_URL_KEY, detected);
+  return detected;
 }
 
 export function setApiUrl(url: string): void {
@@ -28,7 +46,7 @@ export function setApiUrl(url: string): void {
 }
 
 export function isApiConfigured(): boolean {
-  return getApiUrl().length > 0;
+  return true; // always configured via auto-detect
 }
 
 interface ApiResponse<T = unknown> {
