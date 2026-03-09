@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/authContext";
-import { getConfig } from "@/lib/configStore";
+import { getConfig, syncConfigFromApi } from "@/lib/configStore";
 import defaultLogo from "@/assets/logo-sistemaleads.png";
 
 const Login = () => {
@@ -40,6 +40,8 @@ const Login = () => {
 
     const result = await login(email, password);
     if (result.ok) {
+      // Sync config from API so setupCompleted/license are available on new browsers
+      await syncConfigFromApi().catch(() => {});
       navigate("/dashboard", { replace: true });
     } else {
       setError(result.error || "Erro ao fazer login");
