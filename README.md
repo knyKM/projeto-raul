@@ -448,27 +448,74 @@ Exemplos:
   PROPLUS-K9D4E7F2-3b8c1e2a4f5d   → Plano Pro+
 ```
 
-### Gerar chaves
+### Gerar chaves (método recomendado — via API)
+
+> ⚠️ **IMPORTANTE:** Sempre gere chaves pelo endpoint da API para garantir que o mesmo `LICENSE_SECRET` seja usado na geração e validação.
+
+```bash
+# Gerar chave Pro+
+curl -X POST http://localhost:3001/config/generate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"tier":"proplus"}'
+
+# Gerar chave Pro
+curl -X POST http://localhost:3001/config/generate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"tier":"pro"}'
+```
+
+Resposta:
+```json
+{
+  "key": "PROPLUS-A3F8B2C1-7d2f9a1b3c4e",
+  "valid": true,
+  "tier": "proplus"
+}
+```
+
+### Gerar chaves (método alternativo — CLI)
+
+> ⚠️ Este método só funciona se o `LICENSE_SECRET` do `.env` estiver carregado. Use `source .env` antes ou prefira o endpoint acima.
 
 ```bash
 cd /var/www/sistemaleads/backend
-
-node src/license.js generate pro
-node src/license.js generate proplus
-node src/license.js batch 5
+source .env && node src/license.js generate proplus
 ```
 
 ### Validar uma chave
 
 ```bash
-node src/license.js validate PRO-A3F8B2C1-7d2f9a1b3c4e
+# Via API (recomendado)
+curl -X POST http://localhost:3001/config/validate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"key":"PROPLUS-A3F8B2C1-7d2f9a1b3c4e"}'
+
+# Via CLI
+cd /var/www/sistemaleads/backend
+source .env && node src/license.js validate PROPLUS-A3F8B2C1-7d2f9a1b3c4e
 ```
+
+### URL da API (auto-detecção)
+
+O frontend **detecta automaticamente** a URL da API com base no domínio de acesso:
+
+| Ambiente | URL detectada |
+|----------|---------------|
+| `localhost` / `127.0.0.1` | `http://localhost:3001` |
+| Qualquer outro domínio/IP | `http://<domínio>/api` |
+
+> Não é necessário configurar manualmente. Se precisar forçar uma URL específica, use o console do navegador:
+> ```javascript
+> localStorage.setItem('mogibens_api_url', 'http://seu-ip/api');
+> location.reload();
+> ```
 
 ### Segurança
 
 - O `LICENSE_SECRET` no `.env` assina as chaves
 - **Se mudar o secret, todas as chaves anteriores ficam inválidas**
 - Gere um secret forte: `openssl rand -hex 32`
+- Sempre use o **endpoint da API** para gerar chaves (garante mesmo SECRET)
 
 ---
 
