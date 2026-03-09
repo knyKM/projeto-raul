@@ -156,7 +156,7 @@ Preencha as variáveis essenciais:
 # ─── Servidor ────────────────────────────────────────
 PORT=3001
 NODE_ENV=production
-CORS_ORIGIN=https://seudominio.com
+CORS_ORIGIN=http://localhost,http://192.168.1.50
 
 # ─── PostgreSQL ──────────────────────────────────────
 DB_HOST=localhost
@@ -169,6 +169,9 @@ DB_SSL=false
 # ─── Licenciamento ───────────────────────────────────
 LICENSE_SECRET=GERE_UM_SECRET_FORTE_AQUI
 ```
+
+> **CORS com múltiplos origins:** Separe por vírgula. O backend detecta automaticamente qual origin usar na resposta.
+> Ex: `CORS_ORIGIN=http://localhost,http://192.168.1.50,https://seudominio.com`
 
 > **Importante:** Para gerar um secret forte: `openssl rand -hex 32`
 
