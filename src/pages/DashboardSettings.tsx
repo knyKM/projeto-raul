@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Database, Key, Globe, Building2, Bell, Save, Crown, Star, Zap, Lock, Server, Loader2, CheckCircle2, XCircle, RefreshCw, Plug, ListChecks } from "lucide-react";
 import TabulationsSettings from "@/components/dashboard/settings/TabulationsSettings";
 import { getConfig, saveConfig, syncConfigFromApi, AppConfig, TIER_FEATURES, LicenseTier } from "@/lib/configStore";
-import { getApiUrl, setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
+import { getApiUrl, setApiUrl, testApiConnection, testDbConnection, validateLicense } from "@/lib/apiClient";
 import { testAdsConnection, saveAdsConfig, triggerAdsSync, testWhatsAppConnection, saveWhatsAppConfig, testGAConnection, saveGAConfig } from "@/lib/adsService";
 import { useToast } from "@/hooks/use-toast";
 
