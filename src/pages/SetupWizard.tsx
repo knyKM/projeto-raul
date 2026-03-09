@@ -34,6 +34,7 @@ type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 
 const SetupWizard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const existing = getConfig();
   const alreadyCompleted = existing.setupCompleted;
   const [step, setStep] = useState(1);
