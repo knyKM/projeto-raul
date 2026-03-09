@@ -40,6 +40,8 @@ const Login = () => {
 
     const result = await login(email, password);
     if (result.ok) {
+      // Sync config from API so setupCompleted/license are available on new browsers
+      await syncConfigFromApi().catch(() => {});
       navigate("/dashboard", { replace: true });
     } else {
       setError(result.error || "Erro ao fazer login");

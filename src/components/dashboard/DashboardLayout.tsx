@@ -25,10 +25,29 @@ const navItems: { href: string; label: string; icon: typeof LayoutDashboard; fea
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
-  const config = getConfig();
+  const [config, setConfig] = useState(getConfig());
+  const [syncing, setSyncing] = useState(!config.setupCompleted);
   const { user, logout, hasRole } = useAuth();
 
-  // Redirect to setup if not completed
+  // If setupCompleted is false locally, try syncing from API first
+  useEffect(() => {
+    if (!config.setupCompleted) {
+      syncConfigFromApi()
+        .then((synced) => setConfig(synced))
+        .catch(() => {})
+        .finally(() => setSyncing(false));
+    }
+  }, []);
+
+  if (syncing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Redirect to setup if not completed (even after API sync)
   if (!config.setupCompleted) {
     return <Navigate to="/setup" replace />;
   }
