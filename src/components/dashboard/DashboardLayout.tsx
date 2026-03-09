@@ -1,11 +1,11 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog, BarChart3, MessageSquare, UserCircle } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, MapPin, LogOut, Megaphone, FileText, Settings, Lock, UserCog, BarChart3, MessageSquare, UserCircle, Loader2 } from "lucide-react";
 import defaultLogo from "@/assets/logo-sistemaleads.png";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
-import { getConfig } from "@/lib/configStore";
+import { getConfig, syncConfigFromApi } from "@/lib/configStore";
 import { hasFeature, type Feature } from "@/lib/featureAccess";
 import { useAuth } from "@/lib/authContext";
 
