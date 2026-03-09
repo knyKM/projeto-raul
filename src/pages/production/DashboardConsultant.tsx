@@ -80,15 +80,16 @@ const DashboardConsultant = () => {
   useEffect(() => {
     // Load consultores list for admin/supervisor to pick
     api.get<Array<{ id: number; nome: string }>>('/atendentes').then(res => {
-      if (res.ok && res.data) {
+      if (res.ok && res.data && res.data.length > 0) {
         setConsultores(res.data);
         // Auto-select first or match by user name
-        if (res.data.length > 0) {
-          const match = res.data.find(c => c.nome.toLowerCase() === user?.nome?.toLowerCase());
-          setSelectedConsultorId(match?.id || res.data[0].id);
-        }
+        const match = res.data.find(c => c.nome.toLowerCase() === user?.nome?.toLowerCase());
+        setSelectedConsultorId(match?.id || res.data[0].id);
+      } else {
+        // No consultores — stop loading
+        setLoading(false);
       }
-    });
+    }).catch(() => setLoading(false));
     // Load ranking
     api.get<RankingEntry[]>('/consultant/ranking/all').then(res => {
       if (res.ok && res.data) setRanking(res.data);
