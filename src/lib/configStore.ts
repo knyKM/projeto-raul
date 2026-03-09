@@ -148,14 +148,23 @@ export async function syncConfigFromApi(): Promise<AppConfig> {
   const res = await loadConfigFromApi();
   if (res.ok && res.data) {
     // Merge: API data fills gaps, but local critical fields are preserved
+    const apiData = res.data as Record<string, unknown>;
+    const apiTier = apiData.licenseTier as LicenseTier;
+    const TIER_RANK: Record<LicenseTier, number> = { free: 0, pro: 1, proplus: 2 };
+    
+    // Use the higher tier between local and API
+    const localRank = TIER_RANK[local.licenseTier] || 0;
+    const apiRank = TIER_RANK[apiTier] || 0;
+    const bestTier = apiRank > localRank ? apiTier : local.licenseTier;
+    
     const merged = {
       ...DEFAULT_CONFIG,
       ...res.data,
       // Always preserve local setup/license state to avoid reset loops
-      setupCompleted: local.setupCompleted || (res.data as Record<string, unknown>).setupCompleted === true,
-      licenseActivated: local.licenseActivated || (res.data as Record<string, unknown>).licenseActivated === true,
-      licenseTier: local.licenseTier !== 'free' ? local.licenseTier : ((res.data as Record<string, unknown>).licenseTier as LicenseTier) || local.licenseTier,
-      licenseKey: local.licenseKey || (res.data as Record<string, unknown>).licenseKey as string || '',
+      setupCompleted: local.setupCompleted || apiData.setupCompleted === true,
+      licenseActivated: local.licenseActivated || apiData.licenseActivated === true,
+      licenseTier: bestTier,
+      licenseKey: local.licenseKey || (apiData.licenseKey as string) || '',
     } as AppConfig;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     return merged;
