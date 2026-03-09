@@ -688,13 +688,13 @@ sudo ufw enable
 ### Checklist de produção
 
 - [ ] `NODE_ENV=production`
-- [ ] `CORS_ORIGIN` com domínio correto (HTTPS)
-- [ ] `LICENSE_SECRET` forte
+- [ ] `CORS_ORIGIN` com todos os origins necessários (separados por vírgula)
+- [ ] `LICENSE_SECRET` forte (`openssl rand -hex 32`)
 - [ ] PostgreSQL com senha forte
-- [ ] HTTPS ativo via Certbot
-- [ ] PM2 com startup automático
+- [ ] HTTPS ativo via Certbot (ou HTTP em WSL)
+- [ ] PM2 com `-r dotenv/config` e startup automático
 - [ ] Backup automático do banco
-- [ ] Firewall configurado
+- [ ] Firewall configurado (ou port forwarding em WSL)
 
 ---
 
