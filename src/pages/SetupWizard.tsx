@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 
 const SetupWizard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const existing = getConfig();
   const alreadyCompleted = existing.setupCompleted;
   const [step, setStep] = useState(1);
@@ -143,23 +145,38 @@ const SetupWizard = () => {
 
     // Validate license key via API if a paid tier was selected
     if (selectedTier !== 'free' && licenseKey.trim()) {
+      console.log('[SetupWizard] Validando chave:', licenseKey.trim(), 'Tier selecionado:', selectedTier);
       const res = await validateLicense(licenseKey.trim());
+      console.log('[SetupWizard] Resposta validação:', JSON.stringify(res));
+      
       if (res.ok && res.data?.valid) {
         finalTier = (res.data.tier as LicenseTier) || 'free';
         finalActivated = true;
+        console.log('[SetupWizard] Licença válida! Tier:', finalTier);
+        toast({ title: "Licença ativada!", description: `Plano ${TIER_FEATURES[finalTier].name} ativado com sucesso.` });
+      } else if (res.ok && !res.data?.valid) {
+        // API responded but key is invalid
+        console.warn('[SetupWizard] Chave inválida:', res.data);
+        toast({ title: "Chave inválida", description: "A chave de licença não foi reconhecida. O sistema será ativado como Free.", variant: "destructive" });
       } else {
-        // Key is invalid — fall back to free
-        finalTier = 'free';
-        finalActivated = false;
+        // API call failed entirely
+        console.error('[SetupWizard] Erro na validação:', res.error);
+        toast({ 
+          title: "Erro ao validar licença", 
+          description: `Não foi possível validar: ${res.error}. Verifique se o backend está rodando. O sistema será ativado como Free.`, 
+          variant: "destructive" 
+        });
       }
     }
+
+    console.log('[SetupWizard] Salvando config final — tier:', finalTier, 'activated:', finalActivated);
 
     saveConfig({
       companyName,
       companyLogoUrl: companyLogoPreview,
       apiUrl,
       licenseTier: finalTier,
-      licenseKey: finalTier !== 'free' ? licenseKey : '',
+      licenseKey: finalActivated ? licenseKey : '',
       licenseActivated: finalActivated,
       dbHost,
       dbPort,

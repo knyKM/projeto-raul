@@ -9,7 +9,13 @@ router.get('/', async (_req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT key, value FROM config');
     const config = {};
-    rows.forEach(r => { config[r.key] = r.value; });
+    rows.forEach(r => {
+      try {
+        config[r.key] = JSON.parse(r.value);
+      } catch {
+        config[r.key] = r.value;
+      }
+    });
     res.json(config);
   } catch (err) { next(err); }
 });

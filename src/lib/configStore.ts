@@ -1,5 +1,5 @@
 // Configuration store — uses localStorage as local cache + syncs with API when available
-import { getApiUrl, saveConfigToApi, loadConfigFromApi } from './apiClient';
+import { getApiUrl, saveConfigToApi, loadConfigFromApi, validateLicense } from './apiClient';
 
 export type LicenseTier = 'free' | 'pro' | 'proplus';
 
@@ -147,25 +147,47 @@ export async function syncConfigFromApi(): Promise<AppConfig> {
   const local = getConfig();
   const res = await loadConfigFromApi();
   if (res.ok && res.data) {
-    // Merge: API data fills gaps, but local critical fields are preserved
     const apiData = res.data as Record<string, unknown>;
-    const apiTier = apiData.licenseTier as LicenseTier;
-    const TIER_RANK: Record<LicenseTier, number> = { free: 0, pro: 1, proplus: 2 };
     
-    // Use the higher tier between local and API
-    const localRank = TIER_RANK[local.licenseTier] || 0;
-    const apiRank = TIER_RANK[apiTier] || 0;
-    const bestTier = apiRank > localRank ? apiTier : local.licenseTier;
+    // Determine the best license key to use
+    const bestKey = local.licenseKey || (apiData.licenseKey as string) || '';
+    
+    // Re-validate the license key to get the real tier
+    let validatedTier: LicenseTier = 'free';
+    let validatedActivated = false;
+    
+    if (bestKey) {
+      console.log('[ConfigSync] Re-validando chave:', bestKey);
+      const licRes = await validateLicense(bestKey);
+      if (licRes.ok && licRes.data?.valid) {
+        validatedTier = (licRes.data.tier as LicenseTier) || 'free';
+        validatedActivated = true;
+        console.log('[ConfigSync] Tier validado:', validatedTier);
+      } else {
+        console.warn('[ConfigSync] Chave inválida na re-validação');
+      }
+    }
+
+    // If validation failed, fall back to highest stored tier
+    if (!validatedActivated) {
+      const apiTier = apiData.licenseTier as LicenseTier;
+      const TIER_RANK: Record<LicenseTier, number> = { free: 0, pro: 1, proplus: 2 };
+      const localRank = TIER_RANK[local.licenseTier] || 0;
+      const apiRank = TIER_RANK[apiTier] || 0;
+      validatedTier = apiRank > localRank ? apiTier : local.licenseTier;
+      validatedActivated = local.licenseActivated || apiData.licenseActivated === true;
+    }
     
     const merged = {
       ...DEFAULT_CONFIG,
       ...res.data,
-      // Always preserve local setup/license state to avoid reset loops
       setupCompleted: local.setupCompleted || apiData.setupCompleted === true,
-      licenseActivated: local.licenseActivated || apiData.licenseActivated === true,
-      licenseTier: bestTier,
-      licenseKey: local.licenseKey || (apiData.licenseKey as string) || '',
+      licenseActivated: validatedActivated,
+      licenseTier: validatedTier,
+      licenseKey: bestKey,
     } as AppConfig;
+    
+    console.log('[ConfigSync] Config final:', { tier: merged.licenseTier, activated: merged.licenseActivated });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     return merged;
   }
