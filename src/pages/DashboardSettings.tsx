@@ -67,9 +67,27 @@ const DashboardSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     if (config.apiUrl) setApiUrl(config.apiUrl);
-    saveConfig(config);
+
+    // Validate license key if present
+    let updatedConfig = { ...config };
+    if (config.licenseKey) {
+      const res = await validateLicense(config.licenseKey);
+      if (res.ok && res.data) {
+        updatedConfig.licenseTier = (res.data.tier as LicenseTier) || 'free';
+        updatedConfig.licenseActivated = res.data.valid;
+        if (!res.data.valid) {
+          toast({ title: "Chave inválida", description: "A chave de licença não foi reconhecida.", variant: "destructive" });
+        }
+      }
+    } else {
+      updatedConfig.licenseTier = 'free';
+      updatedConfig.licenseActivated = false;
+    }
+
+    setConfig(updatedConfig);
+    saveConfig(updatedConfig);
     setLoading(false);
-    toast({ title: "Configurações salvas", description: "Salvo localmente e sincronizado com a API (se disponível)." });
+    toast({ title: "Configurações salvas", description: `Plano ativo: ${TIER_FEATURES[updatedConfig.licenseTier].name}` });
   };
 
   const handleTestApi = async () => {
