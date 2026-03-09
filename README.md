@@ -191,11 +191,16 @@ Se aparecer `🚀 sistemaLeads API running on port 3001` e `✅ Database connect
 
 ### 5. Configurar com PM2 (produção)
 
+> ⚠️ **IMPORTANTE:** Use `-r dotenv/config` para garantir que o `LICENSE_SECRET` e outras variáveis de ambiente sejam carregadas corretamente.
+
 ```bash
-pm2 start src/index.js --name sistemaleads-api
+pm2 start src/index.js --name sistemaleads-api -r dotenv/config
 pm2 save
 pm2 startup
 ```
+
+> Para reiniciar: `pm2 restart sistemaleads-api`
+> **Nunca use** `pm2 restart --update-env` — isso pode falhar ao carregar o `.env`.
 
 > O comando `pm2 startup` vai gerar um comando `sudo ...` — **execute-o** para que o PM2 inicie automaticamente após reboot.
 
