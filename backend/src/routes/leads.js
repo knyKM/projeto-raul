@@ -122,7 +122,29 @@ router.delete('/:id', async (req, res, next) => {
 // ─── POST /leads/track-visit — geo tracking ─────────
 router.post('/track-visit', async (req, res, next) => {
   try {
-    const { landing_page_slug, latitude, longitude, cidade, estado } = req.body;
+    let { landing_page_slug, latitude, longitude, cidade, estado } = req.body;
+
+    // Server-side geo fallback: if frontend didn't resolve, use visitor IP
+    if (!cidade) {
+      try {
+        const visitorIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+        // Skip localhost/private IPs
+        const isPrivate = !visitorIp || visitorIp === '::1' || visitorIp === '127.0.0.1' || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(visitorIp);
+        if (!isPrivate) {
+          const axios = require('axios');
+          const geoRes = await axios.get(`http://ip-api.com/json/${visitorIp}?fields=city,regionName,lat,lon,status`, { timeout: 3000 });
+          if (geoRes.data?.status === 'success') {
+            cidade = geoRes.data.city || cidade;
+            estado = geoRes.data.regionName?.substring(0, 2)?.toUpperCase() || estado;
+            latitude = latitude || geoRes.data.lat || null;
+            longitude = longitude || geoRes.data.lon || null;
+            console.log('[Geo] Server-side fallback resolved:', { cidade, estado, ip: visitorIp });
+          }
+        }
+      } catch (geoErr) {
+        console.warn('[Geo] Server-side fallback failed:', geoErr.message);
+      }
+    }
 
     await pool.query(
       `INSERT INTO page_visits (landing_page_slug, latitude, longitude, cidade, estado)
@@ -130,6 +152,7 @@ router.post('/track-visit', async (req, res, next) => {
       [landing_page_slug || null, latitude || null, longitude || null, cidade || null, estado || null]
     );
 
+    console.log('[Geo] Visit tracked:', { landing_page_slug, cidade, estado, latitude, longitude });
     res.json({ tracked: true });
   } catch (err) { next(err); }
 });

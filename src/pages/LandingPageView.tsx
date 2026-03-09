@@ -47,17 +47,45 @@ const LandingPageView = () => {
       let latitude: number | undefined;
       let longitude: number | undefined;
 
+      // Try ipapi.co first
       try {
-        const ipRes = await fetch('https://ipapi.co/json/');
+        const ipRes = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
         if (ipRes.ok) {
           const ipData = await ipRes.json();
-          cidade = ipData.city || undefined;
-          estado = ipData.region_code || ipData.region?.substring(0, 2)?.toUpperCase() || undefined;
-          latitude = ipData.latitude || undefined;
-          longitude = ipData.longitude || undefined;
+          if (!ipData.error) {
+            cidade = ipData.city || undefined;
+            estado = ipData.region_code || ipData.region?.substring(0, 2)?.toUpperCase() || undefined;
+            latitude = ipData.latitude || undefined;
+            longitude = ipData.longitude || undefined;
+            console.log('[Geo] ipapi.co OK:', { cidade, estado, latitude, longitude });
+          } else {
+            console.warn('[Geo] ipapi.co rate limited or error:', ipData.reason || ipData.error);
+          }
         }
-      } catch { /* silent */ }
+      } catch (err) {
+        console.warn('[Geo] ipapi.co failed:', err);
+      }
 
+      // Fallback: ip-api.com (free, no key needed, 45 req/min)
+      if (!cidade) {
+        try {
+          const fallbackRes = await fetch('http://ip-api.com/json/?fields=city,regionName,lat,lon,status', { signal: AbortSignal.timeout(5000) });
+          if (fallbackRes.ok) {
+            const fbData = await fallbackRes.json();
+            if (fbData.status === 'success') {
+              cidade = fbData.city || undefined;
+              estado = fbData.regionName?.substring(0, 2)?.toUpperCase() || undefined;
+              latitude = fbData.lat || undefined;
+              longitude = fbData.lon || undefined;
+              console.log('[Geo] ip-api.com fallback OK:', { cidade, estado, latitude, longitude });
+            }
+          }
+        } catch (err) {
+          console.warn('[Geo] ip-api.com fallback failed:', err);
+        }
+      }
+
+      // Optional: browser geolocation (refine coords if user allows)
       if (navigator.geolocation) {
         try {
           const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -69,26 +97,31 @@ const LandingPageView = () => {
           try {
             const geoRes = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`,
-              { headers: { 'User-Agent': 'SistemaLeads/1.0' } }
+              { headers: { 'User-Agent': 'SistemaLeads/1.0' }, signal: AbortSignal.timeout(5000) }
             );
             if (geoRes.ok) {
               const geoData = await geoRes.json();
               cidade = geoData?.address?.city || geoData?.address?.town || geoData?.address?.municipality || cidade;
               estado = geoData?.address?.state_code?.toUpperCase() || geoData?.address?.state?.substring(0, 2)?.toUpperCase() || estado;
+              console.log('[Geo] Browser geolocation refined:', { cidade, estado });
             }
-          } catch { /* keep IP-based data */ }
-        } catch { /* denied or timeout */ }
+          } catch { /* keep previous data */ }
+        } catch { /* denied or timeout - that's fine */ }
       }
 
+      // Always track the visit, even without geo data
       try {
-        await api.post('/leads/track-visit', {
+        const res = await api.post('/leads/track-visit', {
           landing_page_slug: slug,
           latitude: latitude || null,
           longitude: longitude || null,
           cidade: cidade || null,
           estado: estado || null,
         });
-      } catch { /* silent */ }
+        console.log('[Geo] Visit tracked:', res.ok ? 'OK' : res.error, { cidade, estado, latitude, longitude });
+      } catch (err) {
+        console.error('[Geo] Failed to track visit:', err);
+      }
     };
 
     trackVisit();
