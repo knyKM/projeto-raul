@@ -60,8 +60,25 @@ router.post('/test-db', async (req, res) => {
 router.post('/validate-license', (req, res) => {
   const { validateLicenseKey } = require('../license');
   const { key } = req.body;
+  console.log('[License] Validando chave:', key);
   const result = validateLicenseKey(key);
+  console.log('[License] Resultado:', JSON.stringify(result));
+  console.log('[License] SECRET em uso:', process.env.LICENSE_SECRET ? 'custom (.env)' : 'DEFAULT (sem .env!)');
   res.json(result);
+});
+
+// POST /config/generate-license — generate a key using the SAME secret as validation
+router.post('/generate-license', (req, res) => {
+  const { generateLicenseKey, validateLicenseKey } = require('../license');
+  const { tier } = req.body;
+  if (!tier || !['pro', 'proplus'].includes(tier)) {
+    return res.status(400).json({ error: 'Tier inválido. Use: pro ou proplus' });
+  }
+  const key = generateLicenseKey(tier);
+  // Double-check: validate the key we just generated
+  const check = validateLicenseKey(key);
+  console.log('[License] Gerada:', key, '→ Validação:', JSON.stringify(check));
+  res.json({ key, ...check });
 });
 
 // GET /config/tabulations — load tabulations
