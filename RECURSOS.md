@@ -82,7 +82,78 @@ Configurações gerais da plataforma:
 
 ---
 
-## 🎯 Captação de Leads
+## 🔐 Autenticação e Controle de Acesso
+
+### Login
+- Autenticação via JWT (JSON Web Token)
+- Validação de token no carregamento (`/auth/me`)
+- Persistência de sessão via `localStorage`
+
+### Papéis de Usuário
+| Papel | Acesso |
+|---|---|
+| **Atendente** | Dashboard, Leads, Meu Painel, WhatsApp |
+| **Supervisor** | Tudo do atendente + Landing Pages, Usuários, Relatórios |
+| **Administrador** | Acesso total, incluindo Configurações |
+
+### Rotas Protegidas
+- Redirecionamento automático para `/login` se não autenticado
+- Redirecionamento para `/dashboard` se papel insuficiente
+- Componente `ProtectedRoute` com validação de roles
+
+---
+
+## 🧙 Setup Wizard
+
+Assistente de configuração inicial em 5 etapas:
+1. **Empresa** — Nome, logo e dados da empresa
+2. **Licença** — Ativação da chave de licença (Free/Pro/Pro+)
+3. **API Backend** — Configuração e teste da URL da API
+4. **Banco de Dados** — Teste de conexão com PostgreSQL
+5. **Finalizar** — Resumo e confirmação
+
+O wizard é exibido automaticamente na primeira execução e pode ser acessado novamente via configurações.
+
+---
+
+## 🌐 Landing Page Institucional
+
+Página principal do produto (`/`) com seções:
+- Header com navegação e CTA
+- Hero com proposta de valor
+- Selos de confiança (Trust Badges)
+- Benefícios da plataforma
+- Barra de estatísticas
+- Como funciona (passo a passo)
+- Depoimentos de clientes
+- Banner de CTA
+- Formulário de contato
+- Footer institucional
+- Botão flutuante de WhatsApp
+
+---
+
+## 🧪 Ambiente de Demonstração
+
+Rotas separadas com dados mockados para apresentação:
+- `/test/dashboard` — Visão Geral (mock)
+- `/test/dashboard/leads` — Fila de Leads (mock)
+- `/test/dashboard/geo` — Geolocalização (mock)
+- `/test/dashboard/atendentes` — Atendentes (mock)
+- `/test/dashboard/ads` — Central de Ads (mock)
+
+As rotas de produção (`/dashboard/*`) iniciam limpas para dados reais.
+
+---
+
+## 🌗 Tema e Interface
+
+- **Tema claro/escuro** com toggle no dashboard
+- **Layout responsivo:** sidebar fixa no desktop, nav horizontal scrollável no mobile
+- **Design system:** shadcn/ui com tokens semânticos via CSS variables
+- **Notificações:** bell icon com contador de não lidas
+
+---
 
 ### Landing Pages Dinâmicas
 - **Três modelos disponíveis:**
