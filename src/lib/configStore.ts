@@ -1,5 +1,5 @@
 // Configuration store — uses localStorage as local cache + syncs with API when available
-import { getApiUrl, saveConfigToApi, loadConfigFromApi } from './apiClient';
+import { getApiUrl, saveConfigToApi, loadConfigFromApi, validateLicense } from './apiClient';
 
 export type LicenseTier = 'free' | 'pro' | 'proplus';
 
