@@ -94,6 +94,14 @@ const LandingPageView = () => {
     trackVisit();
   }, [slug]);
 
+  if (loadingPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-dark">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
+
   if (!page) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-navy-dark text-primary-foreground p-6 text-center">
