@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ExternalLink, Trash2, Copy, FileText, Eye, Users, TrendingUp, Zap, Loader2, Star } from "lucide-react";
-import { getLandingPages, deleteLandingPage, type LandingPageData } from "@/lib/landingPages";
+import { fetchLandingPages, deleteLandingPageApi, type LandingPageData } from "@/lib/landingPages";
 import CreateLandingPageDialog from "@/components/dashboard/landing-pages/CreateLandingPageDialog";
 import LockedOverlay from "@/components/dashboard/LockedOverlay";
 import { useToast } from "@/hooks/use-toast";
@@ -20,16 +20,23 @@ interface LpStat {
 }
 
 const DashboardLandingPages = () => {
-  const [pages, setPages] = useState<LandingPageData[]>(getLandingPages());
+  const [pages, setPages] = useState<LandingPageData[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<LandingPageData | undefined>();
   const [lpStats, setLpStats] = useState<LpStat[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingPages, setLoadingPages] = useState(true);
   const { toast } = useToast();
 
-  const refresh = () => setPages(getLandingPages());
+  const refresh = async () => {
+    setLoadingPages(true);
+    const data = await fetchLandingPages();
+    setPages(data);
+    setLoadingPages(false);
+  };
 
   useEffect(() => {
+    refresh();
     const fetchStats = async () => {
       setLoadingStats(true);
       const res = await api.get<LpStat[]>('/leads/lp-stats');
@@ -43,9 +50,9 @@ const DashboardLandingPages = () => {
     return lpStats.find(s => s.slug === slug) || { slug, visits: 0, leads: 0, conversion: 0 };
   };
 
-  const handleDelete = (id: string) => {
-    deleteLandingPage(id);
-    refresh();
+  const handleDelete = async (id: string) => {
+    await deleteLandingPageApi(id);
+    await refresh();
     toast({ title: "Landing page removida" });
   };
 
@@ -74,6 +81,7 @@ const DashboardLandingPages = () => {
   const templateLabel = (t: string) => {
     if (t === 'simples') return 'Simples';
     if (t === 'destaque') return 'Destaque';
+    if (t === 'apelativo') return 'Apelativo';
     return 'Completa';
   };
   const templateIcon = (t: string) => {
@@ -96,7 +104,11 @@ const DashboardLandingPages = () => {
           </Button>
         </div>
 
-        {pages.length === 0 ? (
+        {loadingPages ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : pages.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <FileText className="w-12 h-12 text-muted-foreground/40 mb-4" />
@@ -119,7 +131,6 @@ const DashboardLandingPages = () => {
                           <FileText className="w-10 h-10" />
                         </div>
                       )}
-                      {/* Template badge */}
                       <Badge
                         variant="outline"
                         className={`absolute top-2 right-2 text-[10px] font-body border ${
@@ -139,7 +150,6 @@ const DashboardLandingPages = () => {
                         R$ {page.creditValue.toLocaleString("pt-BR")}
                       </p>
 
-                      {/* Performance indicators */}
                       <div className="flex items-center gap-3 pt-1 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
                         {loadingStats ? (
                           <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
@@ -164,31 +174,16 @@ const DashboardLandingPages = () => {
                       </div>
 
                       <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-1 text-xs"
-                          onClick={() => handleCopyLink(page.slug)}
-                        >
+                        <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs" onClick={() => handleCopyLink(page.slug)}>
                           <Copy className="w-3 h-3" />
                           Copiar Link
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1 text-xs"
-                          asChild
-                        >
+                        <Button variant="outline" size="sm" className="gap-1 text-xs" asChild>
                           <a href={`#/lp/${page.slug}`} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(page.id)}
-                        >
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(page.id)}>
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>

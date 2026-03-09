@@ -45,7 +45,7 @@ export async function saveLandingPageApi(lp: LandingPageData): Promise<boolean> 
 }
 
 export async function deleteLandingPageApi(id: string): Promise<boolean> {
-  const res = await api.del(`/landing-pages/${id}`);
+  const res = await api.delete(`/landing-pages/${id}`);
   if (res.ok) cachedPages = null;
   return res.ok;
 }
