@@ -568,8 +568,9 @@ const SetupWizard = () => {
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleFinish} variant="gold" className="font-body">
-              <Rocket className="w-4 h-4 mr-1" /> Ativar e Começar
+            <Button onClick={handleFinish} variant="gold" className="font-body" disabled={finishing}>
+              {finishing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Rocket className="w-4 h-4 mr-1" />}
+              {finishing ? 'Ativando...' : 'Ativar e Começar'}
             </Button>
           )}
         </div>
