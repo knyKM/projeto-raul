@@ -156,7 +156,7 @@ Preencha as variáveis essenciais:
 # ─── Servidor ────────────────────────────────────────
 PORT=3001
 NODE_ENV=production
-CORS_ORIGIN=https://seudominio.com
+CORS_ORIGIN=http://localhost,http://192.168.1.50
 
 # ─── PostgreSQL ──────────────────────────────────────
 DB_HOST=localhost
@@ -169,6 +169,9 @@ DB_SSL=false
 # ─── Licenciamento ───────────────────────────────────
 LICENSE_SECRET=GERE_UM_SECRET_FORTE_AQUI
 ```
+
+> **CORS com múltiplos origins:** Separe por vírgula. O backend detecta automaticamente qual origin usar na resposta.
+> Ex: `CORS_ORIGIN=http://localhost,http://192.168.1.50,https://seudominio.com`
 
 > **Importante:** Para gerar um secret forte: `openssl rand -hex 32`
 
@@ -188,11 +191,16 @@ Se aparecer `🚀 sistemaLeads API running on port 3001` e `✅ Database connect
 
 ### 5. Configurar com PM2 (produção)
 
+> ⚠️ **IMPORTANTE:** Use `-r dotenv/config` para garantir que o `LICENSE_SECRET` e outras variáveis de ambiente sejam carregadas corretamente.
+
 ```bash
-pm2 start src/index.js --name sistemaleads-api
+pm2 start src/index.js --name sistemaleads-api -r dotenv/config
 pm2 save
 pm2 startup
 ```
+
+> Para reiniciar: `pm2 restart sistemaleads-api`
+> **Nunca use** `pm2 restart --update-env` — isso pode falhar ao carregar o `.env`.
 
 > O comando `pm2 startup` vai gerar um comando `sudo ...` — **execute-o** para que o PM2 inicie automaticamente após reboot.
 
@@ -341,20 +349,52 @@ Acesse via `http://localhost/projeto-raul/`.
 
 | Item | Linux dedicado | WSL |
 |------|---------------|-----|
-| Acesso externo | IP público + DNS | Apenas local (localhost) |
+| Acesso externo | IP público + DNS | Via IP do Windows + port forwarding |
 | SSL/HTTPS | Certbot funciona | Não recomendado (use HTTP) |
 | Firewall (UFW) | Necessário | Não necessário |
 | PM2 startup | Funciona com systemd | Pode precisar iniciar manualmente |
 | Hosts file | Não necessário (DNS resolve) | Editar `C:\Windows\System32\drivers\etc\hosts` |
 
-### 4. Script de inicialização para WSL
+### 4. Acessar de outra máquina na rede (WSL)
+
+O IP da WSL é interno e **não acessível** de outras máquinas. Use o IP do **Windows** com port forwarding:
+
+1. **Descubra o IP do Windows** (PowerShell):
+   ```powershell
+   ipconfig
+   ```
+   Anote o `IPv4 Address` (ex: `192.168.1.50`).
+
+2. **Configure port forwarding** (PowerShell como **Administrador**):
+   ```powershell
+   netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=localhost
+   ```
+
+3. **Libere no Firewall do Windows** (PowerShell como **Administrador**):
+   ```powershell
+   netsh advfirewall firewall add rule name="Nginx WSL" dir=in action=allow protocol=tcp localport=80
+   ```
+
+4. **Atualize o CORS** no `backend/.env`:
+   ```env
+   CORS_ORIGIN=http://localhost,http://192.168.1.50
+   ```
+
+5. **Reinicie o backend:**
+   ```bash
+   pm2 restart sistemaleads-api
+   ```
+
+6. Acesse de outra máquina: `http://192.168.1.50/projeto-raul/`
+
+### 5. Script de inicialização para WSL
 
 ```bash
 cat << 'EOF' > ~/start-sistemaleads.sh
 #!/bin/bash
 sudo service nginx start
 sudo service postgresql start
-cd /var/www/sistemaleads/backend && pm2 start src/index.js --name sistemaleads-api 2>/dev/null || pm2 restart sistemaleads-api
+cd /var/www/sistemaleads/backend && pm2 start src/index.js --name sistemaleads-api -r dotenv/config 2>/dev/null || pm2 restart sistemaleads-api
 echo "✅ sistemaLeads iniciado! Acesse http://localhost/projeto-raul/"
 EOF
 chmod +x ~/start-sistemaleads.sh
@@ -408,27 +448,74 @@ Exemplos:
   PROPLUS-K9D4E7F2-3b8c1e2a4f5d   → Plano Pro+
 ```
 
-### Gerar chaves
+### Gerar chaves (método recomendado — via API)
+
+> ⚠️ **IMPORTANTE:** Sempre gere chaves pelo endpoint da API para garantir que o mesmo `LICENSE_SECRET` seja usado na geração e validação.
+
+```bash
+# Gerar chave Pro+
+curl -X POST http://localhost:3001/config/generate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"tier":"proplus"}'
+
+# Gerar chave Pro
+curl -X POST http://localhost:3001/config/generate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"tier":"pro"}'
+```
+
+Resposta:
+```json
+{
+  "key": "PROPLUS-A3F8B2C1-7d2f9a1b3c4e",
+  "valid": true,
+  "tier": "proplus"
+}
+```
+
+### Gerar chaves (método alternativo — CLI)
+
+> ⚠️ Este método só funciona se o `LICENSE_SECRET` do `.env` estiver carregado. Use `source .env` antes ou prefira o endpoint acima.
 
 ```bash
 cd /var/www/sistemaleads/backend
-
-node src/license.js generate pro
-node src/license.js generate proplus
-node src/license.js batch 5
+source .env && node src/license.js generate proplus
 ```
 
 ### Validar uma chave
 
 ```bash
-node src/license.js validate PRO-A3F8B2C1-7d2f9a1b3c4e
+# Via API (recomendado)
+curl -X POST http://localhost:3001/config/validate-license \
+  -H 'Content-Type: application/json' \
+  -d '{"key":"PROPLUS-A3F8B2C1-7d2f9a1b3c4e"}'
+
+# Via CLI
+cd /var/www/sistemaleads/backend
+source .env && node src/license.js validate PROPLUS-A3F8B2C1-7d2f9a1b3c4e
 ```
+
+### URL da API (auto-detecção)
+
+O frontend **detecta automaticamente** a URL da API com base no domínio de acesso:
+
+| Ambiente | URL detectada |
+|----------|---------------|
+| `localhost` / `127.0.0.1` | `http://localhost:3001` |
+| Qualquer outro domínio/IP | `http://<domínio>/api` |
+
+> Não é necessário configurar manualmente. Se precisar forçar uma URL específica, use o console do navegador:
+> ```javascript
+> localStorage.setItem('mogibens_api_url', 'http://seu-ip/api');
+> location.reload();
+> ```
 
 ### Segurança
 
 - O `LICENSE_SECRET` no `.env` assina as chaves
 - **Se mudar o secret, todas as chaves anteriores ficam inválidas**
 - Gere um secret forte: `openssl rand -hex 32`
+- Sempre use o **endpoint da API** para gerar chaves (garante mesmo SECRET)
 
 ---
 
@@ -569,6 +656,8 @@ cd .. && npm install && npm run build
 sudo cp -r dist/* /var/www/html/projeto-raul/
 ```
 
+> **Nota:** Se for a primeira vez com PM2, use: `pm2 start src/index.js --name sistemaleads-api -r dotenv/config`
+
 ### Backup do banco
 
 ```bash
@@ -601,13 +690,13 @@ sudo ufw enable
 ### Checklist de produção
 
 - [ ] `NODE_ENV=production`
-- [ ] `CORS_ORIGIN` com domínio correto (HTTPS)
-- [ ] `LICENSE_SECRET` forte
+- [ ] `CORS_ORIGIN` com todos os origins necessários (separados por vírgula)
+- [ ] `LICENSE_SECRET` forte (`openssl rand -hex 32`)
 - [ ] PostgreSQL com senha forte
-- [ ] HTTPS ativo via Certbot
-- [ ] PM2 com startup automático
+- [ ] HTTPS ativo via Certbot (ou HTTP em WSL)
+- [ ] PM2 com `-r dotenv/config` e startup automático
 - [ ] Backup automático do banco
-- [ ] Firewall configurado
+- [ ] Firewall configurado (ou port forwarding em WSL)
 
 ---
 
