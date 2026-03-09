@@ -11,7 +11,7 @@ import {
   Server, Loader2, CheckCircle2, XCircle, Building2, Upload, ImageIcon,
 } from "lucide-react";
 import { saveConfig, LicenseTier, TIER_FEATURES, getConfig } from "@/lib/configStore";
-import { setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
+import { setApiUrl, testApiConnection, testDbConnection, validateLicense } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-sistemaleads.png";
 
