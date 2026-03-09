@@ -4,7 +4,23 @@
 const API_URL_KEY = 'mogibens_api_url';
 
 export function getApiUrl(): string {
-  return localStorage.getItem(API_URL_KEY) || '';
+  const direct = localStorage.getItem(API_URL_KEY);
+  if (direct) return direct;
+  
+  // Fallback: read from config store (survives if only mogibens_api_url was cleared)
+  try {
+    const configRaw = localStorage.getItem('mogibens_config');
+    if (configRaw) {
+      const config = JSON.parse(configRaw);
+      if (config.apiUrl) {
+        // Re-persist to dedicated key for next time
+        localStorage.setItem(API_URL_KEY, config.apiUrl.replace(/\/+$/, ''));
+        return config.apiUrl;
+      }
+    }
+  } catch {}
+  
+  return '';
 }
 
 export function setApiUrl(url: string): void {
