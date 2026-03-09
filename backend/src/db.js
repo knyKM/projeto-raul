@@ -156,6 +156,24 @@ async function initTables() {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS landing_pages (
+      id VARCHAR(100) PRIMARY KEY,
+      slug VARCHAR(255) UNIQUE NOT NULL,
+      template VARCHAR(20) NOT NULL DEFAULT 'completa',
+      vehicle_name TEXT NOT NULL,
+      brand VARCHAR(100),
+      model VARCHAR(100),
+      year VARCHAR(10),
+      credit_value NUMERIC(12,2) DEFAULT 0,
+      installments INT DEFAULT 80,
+      installment_value NUMERIC(10,2) DEFAULT 0,
+      image_url TEXT,
+      description TEXT,
+      highlights JSONB DEFAULT '[]',
+      whatsapp_number VARCHAR(30),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { saveLandingPage, generateSlug, type LandingPageData, type LandingPageTemplate } from "@/lib/landingPages";
+import { saveLandingPageApi, generateSlug, type LandingPageData, type LandingPageTemplate } from "@/lib/landingPages";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Zap, Star, Heart } from "lucide-react";
 
@@ -33,6 +33,7 @@ const defaults: Omit<LandingPageData, "id" | "slug" | "createdAt"> = {
 const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: Props) => {
   const [form, setForm] = useState(defaults);
   const [highlightsText, setHighlightsText] = useState("");
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -64,7 +65,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
     }
   }, [form.creditValue, form.installments]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.brand || !form.model || form.creditValue <= 0) {
       toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
       return;
@@ -80,10 +81,17 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
       createdAt: editingPage?.createdAt || new Date().toISOString(),
     };
 
-    saveLandingPage(page);
-    onSaved();
-    onOpenChange(false);
-    toast({ title: editingPage ? "Landing page atualizada!" : "Landing page criada!" });
+    setSaving(true);
+    const ok = await saveLandingPageApi(page);
+    setSaving(false);
+
+    if (ok) {
+      onSaved();
+      onOpenChange(false);
+      toast({ title: editingPage ? "Landing page atualizada!" : "Landing page criada!" });
+    } else {
+      toast({ title: "Erro ao salvar", variant: "destructive" });
+    }
   };
 
   const update = (field: string, value: string | number) => setForm((f) => ({ ...f, [field]: value }));
@@ -102,34 +110,10 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Modelo da Página</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <TemplateCard
-                selected={form.template === "completa"}
-                onClick={() => update("template", "completa")}
-                icon={<FileText className="w-5 h-5" />}
-                title="Completa"
-                desc="Hero, simulador, benefícios e formulário"
-              />
-              <TemplateCard
-                selected={form.template === "simples"}
-                onClick={() => update("template", "simples")}
-                icon={<Zap className="w-5 h-5" />}
-                title="Simples"
-                desc="Valor, imagem e formulário direto"
-              />
-              <TemplateCard
-                selected={form.template === "destaque"}
-                onClick={() => update("template", "destaque")}
-                icon={<Star className="w-5 h-5" />}
-                title="Destaque"
-                desc="Split-screen, features e chat widget"
-              />
-              <TemplateCard
-                selected={form.template === "apelativo"}
-                onClick={() => update("template", "apelativo")}
-                icon={<Heart className="w-5 h-5" />}
-                title="Apelativo"
-                desc="Persuasivo, comparativo, depoimentos e CTA forte"
-              />
+              <TemplateCard selected={form.template === "completa"} onClick={() => update("template", "completa")} icon={<FileText className="w-5 h-5" />} title="Completa" desc="Hero, simulador, benefícios e formulário" />
+              <TemplateCard selected={form.template === "simples"} onClick={() => update("template", "simples")} icon={<Zap className="w-5 h-5" />} title="Simples" desc="Valor, imagem e formulário direto" />
+              <TemplateCard selected={form.template === "destaque"} onClick={() => update("template", "destaque")} icon={<Star className="w-5 h-5" />} title="Destaque" desc="Split-screen, features e chat widget" />
+              <TemplateCard selected={form.template === "apelativo"} onClick={() => update("template", "apelativo")} icon={<Heart className="w-5 h-5" />} title="Apelativo" desc="Persuasivo, comparativo, depoimentos e CTA forte" />
             </div>
           </div>
 
@@ -180,14 +164,12 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
             )}
           </div>
 
-          {/* Fields only for "completa" template */}
           {!isSimples && (
             <>
               <div className="space-y-1.5">
                 <Label className="text-xs">Descrição</Label>
                 <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Descreva o veículo e o consórcio..." rows={3} />
               </div>
-
               <div className="space-y-1.5">
                 <Label className="text-xs">Destaques (um por linha)</Label>
                 <Textarea value={highlightsText} onChange={(e) => setHighlightsText(e.target.value)} placeholder={"Sem juros\nSem entrada obrigatória\nParcelas que cabem no bolso"} rows={3} />
@@ -202,7 +184,9 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
 
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button className="flex-1" onClick={handleSave}>{editingPage ? "Salvar" : "Criar Landing Page"}</Button>
+            <Button className="flex-1" onClick={handleSave} disabled={saving}>
+              {saving ? "Salvando..." : editingPage ? "Salvar" : "Criar Landing Page"}
+            </Button>
           </div>
         </div>
       </DialogContent>

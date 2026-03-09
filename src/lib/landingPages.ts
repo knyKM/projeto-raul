@@ -1,3 +1,5 @@
+import { api } from "@/lib/apiClient";
+
 export type LandingPageTemplate = 'completa' | 'simples' | 'destaque' | 'apelativo';
 
 export interface LandingPageData {
@@ -18,31 +20,34 @@ export interface LandingPageData {
   createdAt: string;
 }
 
-const STORAGE_KEY = "sistemaleads_landing_pages";
+// Cache in memory to avoid repeated API calls within the same session
+let cachedPages: LandingPageData[] | null = null;
 
-export function getLandingPages(): LandingPageData[] {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) return [];
-  // Migrate old pages without template field
-  const pages = JSON.parse(data) as LandingPageData[];
-  return pages.map(p => ({ ...p, template: p.template || 'completa' }));
+export async function fetchLandingPages(): Promise<LandingPageData[]> {
+  const res = await api.get<LandingPageData[]>('/landing-pages');
+  if (res.ok && res.data) {
+    cachedPages = res.data;
+    return res.data;
+  }
+  return cachedPages || [];
 }
 
-export function getLandingPageBySlug(slug: string): LandingPageData | undefined {
-  return getLandingPages().find((lp) => lp.slug === slug);
+export async function fetchLandingPageBySlug(slug: string): Promise<LandingPageData | undefined> {
+  const res = await api.get<LandingPageData>(`/landing-pages/by-slug/${slug}`);
+  if (res.ok && res.data) return res.data;
+  return undefined;
 }
 
-export function saveLandingPage(lp: LandingPageData) {
-  const pages = getLandingPages();
-  const idx = pages.findIndex((p) => p.id === lp.id);
-  if (idx >= 0) pages[idx] = lp;
-  else pages.push(lp);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
+export async function saveLandingPageApi(lp: LandingPageData): Promise<boolean> {
+  const res = await api.post('/landing-pages', lp);
+  if (res.ok) cachedPages = null; // invalidate cache
+  return res.ok;
 }
 
-export function deleteLandingPage(id: string) {
-  const pages = getLandingPages().filter((p) => p.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
+export async function deleteLandingPageApi(id: string): Promise<boolean> {
+  const res = await api.delete(`/landing-pages/${id}`);
+  if (res.ok) cachedPages = null;
+  return res.ok;
 }
 
 export function generateSlug(name: string): string {
@@ -52,4 +57,15 @@ export function generateSlug(name: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+// ── Legacy sync-compatible wrappers (kept for backward compat) ──
+// These are synchronous stubs that return cached data. 
+// Components should migrate to async versions above.
+export function getLandingPages(): LandingPageData[] {
+  return cachedPages || [];
+}
+
+export function getLandingPageBySlug(slug: string): LandingPageData | undefined {
+  return (cachedPages || []).find((lp) => lp.slug === slug);
 }

@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { getLandingPageBySlug } from "@/lib/landingPages";
+import { fetchLandingPageBySlug, type LandingPageData } from "@/lib/landingPages";
 import { Button } from "@/components/ui/button";
-import { Phone, CheckCircle2, Shield, Clock, CreditCard, ArrowLeft, MessageCircle } from "lucide-react";
+import { Phone, CheckCircle2, Shield, Clock, CreditCard, ArrowLeft, MessageCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -22,11 +22,20 @@ const benefits = [
 
 const LandingPageView = () => {
   const { slug } = useParams<{ slug: string }>();
-  const page = slug ? getLandingPageBySlug(slug) : undefined;
   const { toast } = useToast();
   const [lead, setLead] = useState({ name: "", phone: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
   const { trackFormStart, trackChatMessage } = useLandingPageTracking(slug);
+  const [page, setPage] = useState<LandingPageData | undefined>();
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  useEffect(() => {
+    if (!slug) { setLoadingPage(false); return; }
+    fetchLandingPageBySlug(slug).then(p => {
+      setPage(p);
+      setLoadingPage(false);
+    });
+  }, [slug]);
 
   // Track visit + geolocation on mount
   useEffect(() => {
@@ -84,6 +93,14 @@ const LandingPageView = () => {
 
     trackVisit();
   }, [slug]);
+
+  if (loadingPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-dark">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
 
   if (!page) {
     return (
