@@ -27,11 +27,18 @@ const PORT = process.env.PORT || 3001;
 // ─── Middleware ──────────────────────────────────────
 app.use(helmet());
 // Support multiple CORS origins (comma-separated in .env)
-const corsOrigins = process.env.CORS_ORIGIN
+const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
-  : ['*'];
+  : [];
 app.use(cors({
-  origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, server-to-server, same-origin)
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, origin || '*');
+    } else {
+      callback(null, allowedOrigins[0]); // fallback to first allowed
+    }
+  },
   credentials: true,
 }));
 app.use(morgan('short'));
