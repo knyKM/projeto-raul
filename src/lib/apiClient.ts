@@ -8,10 +8,17 @@ const API_URL_KEY = 'mogibens_api_url';
  * Development (Vite): localhost:3001.
  */
 function detectApiUrl(): string {
-  const { hostname, protocol } = window.location;
+  const { hostname, protocol, port } = window.location;
 
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3001';
+  // Dev: localhost, 127.0.0.1, or private/local IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+  const isLocal =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(hostname);
+
+  if (isLocal) {
+    // Use same IP so the browser can reach the backend from the same machine
+    return `${protocol}//${hostname}:3001`;
   }
 
   // Production: always /api on the same origin
