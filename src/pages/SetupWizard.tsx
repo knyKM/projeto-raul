@@ -133,14 +133,34 @@ const SetupWizard = () => {
     }
   };
 
-  const handleFinish = () => {
+  const [finishing, setFinishing] = useState(false);
+
+  const handleFinish = async () => {
+    setFinishing(true);
+
+    let finalTier: LicenseTier = 'free';
+    let finalActivated = false;
+
+    // Validate license key via API if a paid tier was selected
+    if (selectedTier !== 'free' && licenseKey.trim()) {
+      const res = await validateLicense(licenseKey.trim());
+      if (res.ok && res.data?.valid) {
+        finalTier = (res.data.tier as LicenseTier) || 'free';
+        finalActivated = true;
+      } else {
+        // Key is invalid — fall back to free
+        finalTier = 'free';
+        finalActivated = false;
+      }
+    }
+
     saveConfig({
       companyName,
       companyLogoUrl: companyLogoPreview,
       apiUrl,
-      licenseTier: selectedTier,
-      licenseKey,
-      licenseActivated: true,
+      licenseTier: finalTier,
+      licenseKey: finalTier !== 'free' ? licenseKey : '',
+      licenseActivated: finalActivated,
       dbHost,
       dbPort,
       dbName,
@@ -149,6 +169,7 @@ const SetupWizard = () => {
       dbSslEnabled: dbSsl,
       setupCompleted: true,
     });
+    setFinishing(false);
     navigate("/dashboard");
   };
 
