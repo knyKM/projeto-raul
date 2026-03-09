@@ -225,7 +225,38 @@ Exportação de leads frios para criação de audiências customizadas:
 
 ---
 
+## 🔧 Troubleshooting de Licença
+
+### Validação HMAC-SHA256
+- A chave é validada via HMAC usando o `LICENSE_SECRET` definido no `.env` do backend
+- Formato: `TIER-XXXXXXXX-HMAC` (ex: `PROPLUS-A3F8B2C1-7d2f9a3b1c2e`)
+- O frontend envia a chave para `/config/validate-license` e recebe `{ valid, tier }`
+
+### Problemas Comuns
+| Sintoma | Causa | Solução |
+|---|---|---|
+| Chave válida no CLI mas `tier: free` na UI | PM2 não carregou `.env` | `pm2 start src/index.js --node-args="-r dotenv/config"` |
+| API retorna `valid: false` | `LICENSE_SECRET` diferente entre CLI e servidor | Verificar variável no processo: `pm2 env <id>` |
+| Tier não atualiza após salvar | URL da API não configurada no frontend | Configurar URL em Configurações > API |
+
+### Logs de Diagnóstico
+- O frontend emite logs `[License]` no console do navegador durante a ativação
+- Verificar: chave enviada, resposta da API, tier final salvo
+
+---
+
 ## 🛠️ Arquitetura Técnica
+
+- **Frontend:** React + TypeScript + Tailwind CSS + shadcn/ui
+- **Backend:** Node.js/Express + PostgreSQL
+- **Mapas:** Leaflet + React-Leaflet
+- **Gráficos:** Recharts
+- **Animações:** Framer Motion
+- **Process Manager:** PM2 (produção)
+
+---
+
+*Última atualização: Março 2026*
 
 - **Frontend:** React + TypeScript + Tailwind CSS + shadcn/ui
 - **Backend:** Node.js/Express + PostgreSQL
