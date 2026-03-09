@@ -11,7 +11,7 @@ import {
   Server, Loader2, CheckCircle2, XCircle, Building2, Upload, ImageIcon,
 } from "lucide-react";
 import { saveConfig, LicenseTier, TIER_FEATURES, getConfig } from "@/lib/configStore";
-import { setApiUrl, testApiConnection, testDbConnection } from "@/lib/apiClient";
+import { setApiUrl, testApiConnection, testDbConnection, validateLicense } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-sistemaleads.png";
 
@@ -133,14 +133,34 @@ const SetupWizard = () => {
     }
   };
 
-  const handleFinish = () => {
+  const [finishing, setFinishing] = useState(false);
+
+  const handleFinish = async () => {
+    setFinishing(true);
+
+    let finalTier: LicenseTier = 'free';
+    let finalActivated = false;
+
+    // Validate license key via API if a paid tier was selected
+    if (selectedTier !== 'free' && licenseKey.trim()) {
+      const res = await validateLicense(licenseKey.trim());
+      if (res.ok && res.data?.valid) {
+        finalTier = (res.data.tier as LicenseTier) || 'free';
+        finalActivated = true;
+      } else {
+        // Key is invalid — fall back to free
+        finalTier = 'free';
+        finalActivated = false;
+      }
+    }
+
     saveConfig({
       companyName,
       companyLogoUrl: companyLogoPreview,
       apiUrl,
-      licenseTier: selectedTier,
-      licenseKey,
-      licenseActivated: true,
+      licenseTier: finalTier,
+      licenseKey: finalTier !== 'free' ? licenseKey : '',
+      licenseActivated: finalActivated,
       dbHost,
       dbPort,
       dbName,
@@ -149,6 +169,7 @@ const SetupWizard = () => {
       dbSslEnabled: dbSsl,
       setupCompleted: true,
     });
+    setFinishing(false);
     navigate("/dashboard");
   };
 
@@ -547,8 +568,9 @@ const SetupWizard = () => {
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleFinish} variant="gold" className="font-body">
-              <Rocket className="w-4 h-4 mr-1" /> Ativar e Começar
+            <Button onClick={handleFinish} variant="gold" className="font-body" disabled={finishing}>
+              {finishing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Rocket className="w-4 h-4 mr-1" />}
+              {finishing ? 'Ativando...' : 'Ativar e Começar'}
             </Button>
           )}
         </div>
