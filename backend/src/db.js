@@ -208,6 +208,26 @@ async function initTables() {
     END $$;
   `).catch(() => {});
 
+  // Add extra contact fields to leads
+  const extraColumns = [
+    { name: 'observacoes', type: 'TEXT' },
+    { name: 'renda', type: 'VARCHAR(50)' },
+    { name: 'profissao', type: 'VARCHAR(100)' },
+    { name: 'cpf', type: 'VARCHAR(14)' },
+    { name: 'endereco', type: 'TEXT' },
+    { name: 'interesse', type: 'VARCHAR(255)' },
+    { name: 'tabulacao', type: 'VARCHAR(100)' },
+  ];
+  for (const col of extraColumns) {
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = '${col.name}') THEN
+          ALTER TABLE leads ADD COLUMN ${col.name} ${col.type};
+        END IF;
+      END $$;
+    `).catch(() => {});
+  }
+
   console.log('✅ Database tables initialized');
 }
 

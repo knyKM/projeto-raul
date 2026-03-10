@@ -84,21 +84,26 @@ router.get('/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─── PUT /leads/:id — update lead status/assignment ─
+// ─── PUT /leads/:id — update lead status/assignment/details ─
 router.put('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status, consultor_id } = req.body;
+    const allowedFields = ['status', 'consultor_id', 'observacoes', 'renda', 'profissao', 'cpf', 'endereco', 'interesse', 'tabulacao', 'nome', 'telefone', 'email'];
 
     const fields = [];
     const params = [];
     let idx = 1;
 
-    if (status) { fields.push(`status = $${idx++}`); params.push(status); }
-    if (consultor_id !== undefined) { fields.push(`consultor_id = $${idx++}`); params.push(consultor_id); }
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        fields.push(`${field} = $${idx++}`);
+        params.push(req.body[field]);
+      }
+    }
 
     if (fields.length === 0) return res.status(400).json({ error: 'Nenhum campo para atualizar' });
 
+    fields.push(`updated_at = NOW()`);
     params.push(id);
     const { rows } = await pool.query(
       `UPDATE leads SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
