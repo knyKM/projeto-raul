@@ -142,10 +142,36 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Valor do crédito (R$) *</Label>
               <Input type="number" value={form.creditValue || ""} onChange={(e) => update("creditValue", Number(e.target.value))} placeholder="85000" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Acréscimo (%)</Label>
+              <div className="flex gap-1.5">
+                <Input
+                  type="number"
+                  value={percentage || ""}
+                  onChange={(e) => setPercentage(Number(e.target.value))}
+                  placeholder="10"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 text-xs px-2"
+                  disabled={!percentage || form.creditValue <= 0}
+                  onClick={() => {
+                    const newValue = Math.round(form.creditValue * (1 + percentage / 100) * 100) / 100;
+                    update("creditValue", newValue);
+                    setPercentage(0);
+                  }}
+                >
+                  Aplicar
+                </Button>
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Nº de parcelas</Label>
