@@ -48,11 +48,23 @@ router.post('/test', async (_req, res) => {
 });
 
 // POST /analytics/config
-router.post('/config', (req, res) => {
+router.post('/config', async (req, res) => {
   const { measurementId, propertyId, serviceAccountKey } = req.body;
   if (measurementId) process.env.GA_MEASUREMENT_ID = measurementId;
   if (propertyId) process.env.GA_PROPERTY_ID = propertyId;
   if (serviceAccountKey) process.env.GA_SERVICE_ACCOUNT_KEY = serviceAccountKey;
+
+  // Persist to config table
+  try {
+    await pool.query(
+      `INSERT INTO config (key, value, updated_at) VALUES ('ads_analytics', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+      [JSON.stringify(req.body)]
+    );
+  } catch (err) {
+    console.error('[Analytics] Failed to persist config:', err.message);
+  }
+
   res.json({ ok: true });
 });
 
