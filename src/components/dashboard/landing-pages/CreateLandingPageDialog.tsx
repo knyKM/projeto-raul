@@ -54,9 +54,11 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
         whatsappNumber: editingPage.whatsappNumber,
       });
       setHighlightsText(editingPage.highlights.join("\n"));
+      setPercentage(0);
     } else {
       setForm(defaults);
       setHighlightsText("");
+      setPercentage(0);
     }
   }, [editingPage, open]);
 
