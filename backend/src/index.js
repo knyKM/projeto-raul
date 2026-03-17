@@ -68,6 +68,67 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Erro interno do servidor' });
 });
 
+// ─── Restore saved configs from DB into process.env ─
+async function restoreConfigsFromDB() {
+  try {
+    const { rows } = await pool.query(
+      "SELECT key, value FROM config WHERE key IN ('ads_meta', 'ads_google', 'ads_tiktok', 'ads_whatsapp', 'ads_analytics')"
+    );
+
+    const envMaps = {
+      ads_meta: {
+        accessToken: 'META_ACCESS_TOKEN',
+        adAccountId: 'META_AD_ACCOUNT_ID',
+        pixelId: 'META_PIXEL_ID',
+        pageId: 'META_PAGE_ID',
+        appId: 'META_APP_ID',
+        appSecret: 'META_APP_SECRET',
+      },
+      ads_google: {
+        developerToken: 'GOOGLE_ADS_DEVELOPER_TOKEN',
+        clientId: 'GOOGLE_ADS_CLIENT_ID',
+        clientSecret: 'GOOGLE_ADS_CLIENT_SECRET',
+        refreshToken: 'GOOGLE_ADS_REFRESH_TOKEN',
+        customerId: 'GOOGLE_ADS_CUSTOMER_ID',
+        managerAccountId: 'GOOGLE_ADS_MANAGER_ID',
+      },
+      ads_tiktok: {
+        accessToken: 'TIKTOK_ACCESS_TOKEN',
+        advertiserId: 'TIKTOK_ADVERTISER_ID',
+        appId: 'TIKTOK_APP_ID',
+        appSecret: 'TIKTOK_APP_SECRET',
+        pixelId: 'TIKTOK_PIXEL_ID',
+      },
+      ads_whatsapp: {
+        phoneNumberId: 'WHATSAPP_PHONE_NUMBER_ID',
+        businessAccountId: 'WHATSAPP_BUSINESS_ACCOUNT_ID',
+        accessToken: 'WHATSAPP_ACCESS_TOKEN',
+        webhookVerifyToken: 'WHATSAPP_WEBHOOK_VERIFY_TOKEN',
+      },
+      ads_analytics: {
+        measurementId: 'GA_MEASUREMENT_ID',
+        propertyId: 'GA_PROPERTY_ID',
+        serviceAccountKey: 'GA_SERVICE_ACCOUNT_KEY',
+      },
+    };
+
+    for (const row of rows) {
+      const map = envMaps[row.key];
+      if (!map) continue;
+      let config;
+      try { config = typeof row.value === 'string' ? JSON.parse(row.value) : row.value; } catch { continue; }
+      for (const [configKey, envKey] of Object.entries(map)) {
+        if (config[configKey] && !process.env[envKey]) {
+          process.env[envKey] = config[configKey];
+        }
+      }
+    }
+    console.log('🔑 Saved configs restored from DB');
+  } catch (err) {
+    console.error('[Config Restore] Error:', err.message);
+  }
+}
+
 // ─── Start ──────────────────────────────────────────
 app.listen(PORT, async () => {
   console.log(`🚀 sistemaLeads API running on port ${PORT}`);
@@ -75,6 +136,10 @@ app.listen(PORT, async () => {
   console.log(dbOk ? '✅ Database connected' : '⚠️  Database not connected');
   if (dbOk) {
     await initTables();
+
+    // Restore configs saved via dashboard into process.env
+    await restoreConfigsFromDB();
+
     // Create default admin if no users exist
     const { pool } = require('./db');
     const { hashPassword } = require('./routes/auth');
@@ -87,5 +152,9 @@ app.listen(PORT, async () => {
       );
       console.log('👤 Default admin created: admin@sistemaleads.com / admin123');
     }
+
+    // Activate ads sync cron (every 6 hours)
+    const { startAdsSyncCron } = require('./cron/syncAds');
+    startAdsSyncCron();
   }
 });

@@ -173,12 +173,24 @@ router.post('/test', async (_req, res) => {
 });
 
 // POST /whatsapp/config
-router.post('/config', (req, res) => {
+router.post('/config', async (req, res) => {
   const { phoneNumberId, businessAccountId, accessToken, webhookVerifyToken } = req.body;
   if (phoneNumberId) process.env.WHATSAPP_PHONE_NUMBER_ID = phoneNumberId;
   if (businessAccountId) process.env.WHATSAPP_BUSINESS_ACCOUNT_ID = businessAccountId;
   if (accessToken) process.env.WHATSAPP_ACCESS_TOKEN = accessToken;
   if (webhookVerifyToken) process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN = webhookVerifyToken;
+
+  // Persist to config table
+  try {
+    await pool.query(
+      `INSERT INTO config (key, value, updated_at) VALUES ('ads_whatsapp', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+      [JSON.stringify(req.body)]
+    );
+  } catch (err) {
+    console.error('[WhatsApp] Failed to persist config:', err.message);
+  }
+
   res.json({ ok: true });
 });
 

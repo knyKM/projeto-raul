@@ -217,6 +217,7 @@ async function initTables() {
     { name: 'endereco', type: 'TEXT' },
     { name: 'interesse', type: 'VARCHAR(255)' },
     { name: 'tabulacao', type: 'VARCHAR(100)' },
+    { name: 'followup_sent', type: 'BOOLEAN DEFAULT false' },
   ];
   for (const col of extraColumns) {
     await pool.query(`
