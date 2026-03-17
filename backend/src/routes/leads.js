@@ -75,8 +75,40 @@ router.post('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── GET /leads/geo — geo data for dashboard ────────
+router.get('/geo', async (_req, res, next) => {
+  try {
+    const { rows: locations } = await pool.query(`
+      SELECT cidade, estado, COUNT(*) as total
+      FROM page_visits
+      WHERE cidade IS NOT NULL
+      GROUP BY cidade, estado
+      ORDER BY total DESC
+      LIMIT 50
+    `);
+
+    const { rows: totalRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits');
+
+    const { rows: recent } = await pool.query(`
+      SELECT id, landing_page_slug, cidade, estado, latitude, longitude, visited_at
+      FROM page_visits
+      ORDER BY visited_at DESC
+      LIMIT 50
+    `);
+
+    const { rows: noGeoRows } = await pool.query('SELECT COUNT(*) as total FROM page_visits WHERE cidade IS NULL');
+
+    res.json({
+      locations,
+      totalVisits: parseInt(totalRows[0].total),
+      recentVisits: recent,
+      visitsWithoutGeo: parseInt(noGeoRows[0].total),
+    });
+  } catch (err) { next(err); }
+});
+
 // ─── GET /leads/:id — full lead detail ──────────────
-router.get('/:id', async (req, res, next) => {
+router.get('/:id(\\d+)', async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT * FROM leads WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Lead não encontrado' });
@@ -85,7 +117,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ─── PUT /leads/:id — update lead status/assignment/details ─
-router.put('/:id', async (req, res, next) => {
+router.put('/:id(\\d+)', async (req, res, next) => {
   try {
     const { id } = req.params;
     const allowedFields = ['status', 'consultor_id', 'observacoes', 'renda', 'profissao', 'cpf', 'endereco', 'interesse', 'tabulacao', 'nome', 'telefone', 'email'];
@@ -116,15 +148,13 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // ─── DELETE /leads/:id ──────────────────────────────
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id(\\d+)', async (req, res, next) => {
   try {
     const { rowCount } = await pool.query('DELETE FROM leads WHERE id = $1', [req.params.id]);
     if (rowCount === 0) return res.status(404).json({ error: 'Lead não encontrado' });
     res.json({ deleted: true });
   } catch (err) { next(err); }
 });
-
-// ─── POST /leads/track-visit — geo tracking ─────────
 router.post('/track-visit', async (req, res, next) => {
   try {
     let { landing_page_slug, latitude, longitude, cidade, estado } = req.body;
