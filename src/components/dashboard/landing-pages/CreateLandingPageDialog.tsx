@@ -34,6 +34,7 @@ const CreateLandingPageDialog = ({ open, onOpenChange, onSaved, editingPage }: P
   const [form, setForm] = useState(defaults);
   const [highlightsText, setHighlightsText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [percentage, setPercentage] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
