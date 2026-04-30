@@ -31,6 +31,7 @@ app.use(helmet());
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
   : [];
+const allowedOriginSet = new Set(allowedOrigins);
 
 // Auto-allow localhost and private network IPs (LAN/WSL) on any port
 function isPrivateOrigin(origin) {
@@ -49,20 +50,47 @@ function isPrivateOrigin(origin) {
   }
 }
 
+function resolveCorsOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOriginSet.has('*') || allowedOriginSet.has(origin) || isPrivateOrigin(origin)) {
+    return origin;
+  }
+  return false;
+}
+
+// Handle browser preflight explicitly so LAN/WSL origins never fall back to localhost
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const corsOrigin = resolveCorsOrigin(origin);
+
+  if (corsOrigin) {
+    if (corsOrigin !== true) res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return corsOrigin
+      ? res.sendStatus(204)
+      : res.status(403).json({ error: `CORS: origem não permitida (${origin || 'sem origem'})` });
+  }
+
+  return next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (curl, server-to-server, same-origin)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      return callback(null, origin);
-    }
-    if (isPrivateOrigin(origin)) {
-      return callback(null, origin);
-    }
+    const corsOrigin = resolveCorsOrigin(origin);
+    if (corsOrigin) return callback(null, corsOrigin);
     // Reject properly (don't lie with a wrong origin header)
     return callback(new Error(`CORS: origem não permitida (${origin})`));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(morgan('short'));
 app.use(express.json({ limit: '5mb' }));
