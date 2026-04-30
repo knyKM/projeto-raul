@@ -62,25 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     for (let index = 0; index < candidates.length; index += 1) {
       const baseUrl = candidates[index];
       try {
-      const res = await fetch(`${baseUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const canTryNext = [404, 502, 503, 504].includes(res.status) && index < candidates.length - 1;
-        if (canTryNext) continue;
-        return { ok: false, error: data.error || "Erro ao fazer login" };
-      }
+        const res = await fetch(`${baseUrl}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          const canTryNext = [404, 502, 503, 504].includes(res.status) && index < candidates.length - 1;
+          if (canTryNext) continue;
+          return { ok: false, error: data.error || "Erro ao fazer login" };
+        }
 
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem("mogibens_api_url", baseUrl);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      return { ok: true };
-    } catch {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem("mogibens_api_url", baseUrl);
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        return { ok: true };
+      } catch {
         if (index < candidates.length - 1) continue;
       }
     }
