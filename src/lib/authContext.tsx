@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { getApiUrl } from "./apiClient";
+import { getApiUrl, getApiUrlCandidates } from "./apiClient";
 
 export type UserRole = "atendente" | "supervisor" | "administrador";
 
@@ -56,26 +56,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const baseUrl = getApiUrl();
-    if (!baseUrl) return { ok: false, error: "API não configurada" };
+    const candidates = getApiUrlCandidates();
+    if (candidates.length === 0) return { ok: false, error: "API não configurada" };
 
-    try {
-      const res = await fetch(`${baseUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) return { ok: false, error: data.error || "Erro ao fazer login" };
+    for (let index = 0; index < candidates.length; index += 1) {
+      const baseUrl = candidates[index];
+      try {
+        const res = await fetch(`${baseUrl}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          const canTryNext = [404, 502, 503, 504].includes(res.status) && index < candidates.length - 1;
+          if (canTryNext) continue;
+          return { ok: false, error: data.error || "Erro ao fazer login" };
+        }
 
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      return { ok: true };
-    } catch {
-      return { ok: false, error: "Erro de conexão com o servidor" };
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem("mogibens_api_url", baseUrl);
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        return { ok: true };
+      } catch {
+        if (index < candidates.length - 1) continue;
+      }
     }
+
+    return { ok: false, error: "Erro de conexão com o servidor" };
   };
 
   const logout = () => {
