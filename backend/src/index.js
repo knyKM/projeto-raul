@@ -31,14 +31,36 @@ app.use(helmet());
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
   : [];
+
+// Auto-allow localhost and private network IPs (LAN/WSL) on any port
+function isPrivateOrigin(origin) {
+  try {
+    const url = new URL(origin);
+    const h = url.hostname;
+    return (
+      h === 'localhost' ||
+      h === '127.0.0.1' ||
+      /^192\.168\.\d+\.\d+$/.test(h) ||
+      /^10\.\d+\.\d+\.\d+$/.test(h) ||
+      /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(h)
+    );
+  } catch {
+    return false;
+  }
+}
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (curl, server-to-server, same-origin)
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      callback(null, origin || '*');
-    } else {
-      callback(null, allowedOrigins[0]); // fallback to first allowed
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, origin);
     }
+    if (isPrivateOrigin(origin)) {
+      return callback(null, origin);
+    }
+    // Reject properly (don't lie with a wrong origin header)
+    return callback(new Error(`CORS: origem não permitida (${origin})`));
   },
   credentials: true,
 }));
