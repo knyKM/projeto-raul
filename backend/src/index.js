@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { pool, testConnection, initTables } = require('./db');
@@ -26,10 +25,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ─── Middleware ──────────────────────────────────────
-app.use(helmet());
 // Support multiple CORS origins (comma-separated in .env)
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim().replace(/\/+$/, ''))
   : [];
 const allowedOriginSet = new Set(allowedOrigins);
 
@@ -52,10 +50,18 @@ function isPrivateOrigin(origin) {
 
 function resolveCorsOrigin(origin) {
   if (!origin) return true;
-  if (allowedOriginSet.has('*') || allowedOriginSet.has(origin) || isPrivateOrigin(origin)) {
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+  if (allowedOriginSet.has('*') || allowedOriginSet.has(normalizedOrigin) || isPrivateOrigin(normalizedOrigin)) {
     return origin;
   }
   return false;
+}
+
+function appendVaryOrigin(res) {
+  const current = res.getHeader('Vary');
+  if (!current) return res.setHeader('Vary', 'Origin');
+  if (String(current).toLowerCase().split(',').map(s => s.trim()).includes('origin')) return undefined;
+  return res.setHeader('Vary', `${current}, Origin`);
 }
 
 // Handle browser preflight explicitly so LAN/WSL origins never fall back to localhost
@@ -64,11 +70,15 @@ app.use((req, res, next) => {
   const corsOrigin = resolveCorsOrigin(origin);
 
   if (corsOrigin) {
-    if (corsOrigin !== true) res.setHeader('Access-Control-Allow-Origin', corsOrigin);
-    res.setHeader('Vary', 'Origin');
+    if (corsOrigin !== true) {
+      res.removeHeader('Access-Control-Allow-Origin');
+      res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    }
+    appendVaryOrigin(res);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400');
   }
 
   if (req.method === 'OPTIONS') {
@@ -80,18 +90,7 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (curl, server-to-server, same-origin)
-    const corsOrigin = resolveCorsOrigin(origin);
-    if (corsOrigin) return callback(null, corsOrigin);
-    // Reject properly (don't lie with a wrong origin header)
-    return callback(new Error(`CORS: origem não permitida (${origin})`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(helmet());
 app.use(morgan('short'));
 app.use(express.json({ limit: '5mb' }));
 
